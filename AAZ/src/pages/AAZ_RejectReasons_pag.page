@@ -1,0 +1,44 @@
+<apex:page showHeader="false" sidebar="false" controller="AAZ_RelatedRejectionsCmp_ctr">
+    <!-- <c:AAZ_RelatedRejections_cmp caseId="{! Case.Id }" /> -->
+    <h3 style="{! IF(lstReasonsByDocument.size > 0, 'display: block; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .75rem 1rem; background: #f4f6f9;', 'display: none; visibility: hidden;') }">
+        Motivos de rechazo por Documento
+    </h3>
+    <apex:dataTable value="{! lstReasonsByDocument }" var="reason" style="border-spacing: 0; width: 100%; background-color: #fdfdfd; font-size: inherit; border-collapse: separate; border-top: 1px solid #d8dde6; border-bottom: 1px solid #d8dde6;" rendered="{! lstReasonsByDocument.size > 0 }">
+        <apex:column value="{! reason.Name }" style="border-top: 1px solid #d8dde6; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: none; letter-spacing: .0625rem; padding: .75rem 1rem;">
+            <apex:facet name="header">
+                <div style="font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .5rem 1rem;">
+                    Motivo de Rechazo
+                </div>
+            </apex:facet>
+        </apex:column>
+        <apex:column value="{! reason.Document__r.DocumentTypeId__c }" style="border-top: 1px solid #d8dde6; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: none; letter-spacing: .0625rem; padding: .75rem 1rem;">
+            <apex:facet name="header">
+                <div style="font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .5rem 1rem;">
+                    Id Tipo Documento
+                </div>
+            </apex:facet>
+        </apex:column>
+        <apex:column value="{! reason.Document__c }" style="border-top: 1px solid #d8dde6; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: none; letter-spacing: .0625rem; padding: .75rem 1rem;">
+            <apex:facet name="header">
+                <div style="font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .5rem 1rem;">
+                    Documento
+                </div>
+            </apex:facet>
+        </apex:column>
+    </apex:dataTable>
+
+    <h3 style="{! IF(lstReasonsByProcedure.size > 0 && lstReasonsByDocument.size > 0, 'display: block; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .75rem 1rem; background: #f4f6f9; margin-top: 1.5rem;',
+               IF(lstReasonsByProcedure.size > 0 && lstReasonsByDocument.size == 0, 'display: block; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .75rem 1rem; background: #f4f6f9;',
+               'display: none; visibility: hidden;')) }">
+        Motivos de rechazo por Trámite
+    </h3>
+    <apex:dataTable value="{! lstReasonsByProcedure }" var="reason" style="border-spacing: 0; width: 100%; background-color: #fdfdfd; font-size: inherit; border-collapse: separate; border-top: 1px solid #d8dde6; border-bottom: 1px solid #d8dde6;" rendered="{! lstReasonsByProcedure.size > 0 }">
+        <apex:column value="{! reason.Name }" style="border-top: 1px solid #d8dde6; font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: none; letter-spacing: .0625rem; padding: .75rem 1rem;">
+            <apex:facet name="header">
+                <div style="font-weight: 400; font-family: Arial, Helvetica, sans-serif; font-size: .75rem; line-height: 1.25; color: #54698d; text-transform: uppercase; letter-spacing: .0625rem; padding: .5rem 1rem;">
+                    Motivo de rechazo
+                </div>
+            </apex:facet>
+        </apex:column>
+    </apex:dataTable>
+</apex:page>

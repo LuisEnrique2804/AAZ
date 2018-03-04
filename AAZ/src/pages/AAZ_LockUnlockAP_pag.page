@@ -1,0 +1,362 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria 
+    Proyecto:          Mesa de Control Afore
+    Descripción:       
+     
+    Cambios (Versiones)     
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción     
+    *****   *************  *****************************    *********************************   
+     0.1     23-08-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     23-08-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     23-08-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+*********************************************************************************************/-->
+<apex:page standardController="Case" showHeader="false" sidebar="false" docType="html-5.0" extensions="AAZ_LockUnlockAP_ctr" standardStylesheets="false">
+	<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<head>
+			<meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <title>Bloque-Desbloqueo del AP</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <apex:includeLightning />
+            <apex:includeScript value="/support/console/39.0/integration.js"/>
+            <apex:slds />
+		</head>
+		<body id="body" class="slds-scope" style="background-color: white; width: 100%;">
+			<apex:actionStatus id="processing">
+	            <apex:facet name="start">
+	                <div class="slds-spinner_container slds-is-fixed">
+	                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+	                        <span class="slds-assistive-text">Procesando</span>
+	                        <div class="slds-spinner__dot-a"></div>
+	                        <div class="slds-spinner__dot-b"></div>
+	                    </div>
+	                </div>
+	            </apex:facet>
+	        </apex:actionStatus>
+			<div >
+	            <!-- Page Header -->
+	            <div class="slds-page-header slds-m-bottom--small" role="banner">
+	                <div class="slds-media slds-media--center">
+	                    <div class="slds-media__figure">
+	                    	<span class="slds-icon_container slds-icon_container_circle" style="background-color: #af272f">
+		                        <svg class="slds-icon" aria-hidden="true">
+		                            <use xlink:href="{!URLFOR($Resource.AAZ_SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#unlock')}"></use>
+		                        </svg>
+		                        <span class="slds-assistive-text">Bloqueo y desbloqueo del Agente Promotor</span>
+		                    </span>
+	                    </div>
+	                    <div class="slds-media__body">
+	                        <p class="slds-text-title--caps slds-line-height--reset">Bloqueo/Desbloqueo</p>
+	                        <p class="slds-page-header__title slds-truncate" title="Rohde Corp - 80,000 Widgets">Agente Promotor</p>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+	        <apex:form id="main">
+
+	        	<div id="case" class="slds-col slds-m-horizontal--small">
+		        	<div class="slds-notify_container" style="display:{!IF(lstSuccessMsgs.size <> 0,'inline','none')}; position:relative;">
+		                <div class="slds-notify slds-notify--alert slds-theme--alert-texture"  role="alert">
+		                    <span class="slds-assistive-text">Info</span>
+		                    <ul>
+		                        <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+		                            <li>
+		                                {!strMsg}
+		                            </li>
+		                        </apex:repeat>
+		                    </ul>
+		                </div>
+		            </div> 
+		            <div class="slds-notify_container" style="display:{!IF(lstErrorMsgs.size <> 0,'inline','none')}; position: relative;">
+		                <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+		                    <span class="slds-assistive-text">Error</span>
+		                    <br/>
+		                    <ul>
+		                        <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+		                            <li>
+		                                {!strMsg}
+		                            </li>
+		                        </apex:repeat>
+		                    </ul>
+		                </div>
+		            </div>
+		        	<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">Busqueda de AP</h3>
+			        <div class="slds-m-top--x-small slds-grid slds-box slds-wrap slds-grid_pull-padded slds-m-horizontal--small slds-grid_vertical-align-center slds-grid_align-center">
+		  				<div class="slds-p-horizontal_small slds-size_1-of-4">
+		  					<div class="slds-col slds-p-horizontal--medium">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                                <label class="slds-form-element__label" for="text-input-prioridad"># del Agente promotor</label>
+		                                <apex:input id="nunAP" value="{!stgNumAp}" type="text" styleclass="slds-input"/>
+		                            </div>
+		                        </div>
+		                    </div>
+		  				</div>
+			        	<div class="slds-p-horizontal_small slds-size_1-of-4">
+			        		<div class="slds-col slds-p-horizontal--medium">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                                <label class="slds-form-element__label" for="text-input-prioridad"># de empleado del Agente Promotor</label>
+		                                <apex:input id="numEmpAp" value="{!stgNumEmpAp}" type="text" styleclass="slds-input"/>
+		                            </div>    
+		                        </div>
+		                    </div>
+			        	</div>
+		  				<div class="slds-p-horizontal_small slds-size_1-of-4 slds-align_absolute-center">
+		  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                            	<label class="slds-form-element__label" for="text-input-prioridad">NSS del Trabajador</label>
+		                                <apex:input id="nssWork" value="{!stgNssWorker}" type="text" styleclass="slds-input"/>
+		                            </div>
+		                        </div>
+		                    </div>
+		  				</div>
+		  				<div class="slds-p-horizontal_small slds-size_1-of-4 slds-align_absolute-center">
+		  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                            	<div class="slds-button-group" role="group">
+											<apex:commandButton status="processing" styleClass="slds-button slds-button--neutral" value="Buscar" action="{!searchCaseContAcc}"/>
+										</div>
+		                            </div>
+		                        </div>
+		                    </div>
+		  				</div>
+			        </div>
+			    </div>
+			    <br/>
+			    <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">Registro</h3>
+
+			        <div class="slds-m-top--x-small slds-grid slds-box slds-wrap slds-grid_pull-padded slds-m-horizontal--small slds-grid_vertical-align-center slds-grid_align-center">
+			        	<div class="slds-p-horizontal_small slds-size_3-of-4">
+			        		<div class="slds-col slds-p-horizontal--medium">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                                <label class="slds-form-element__label" for="text-input-prioridad">Antecedentes/Comentarios</label>
+		                                <apex:inputTextarea id="newDesc2" value="{!stgComplain}" styleclass="slds-input"/>
+		                            </div>    
+		                        </div>
+		                    </div>
+			        	</div>
+		  				<div class="slds-p-horizontal_small slds-size_1-of-4 slds-align_absolute-center">
+		  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+		                        <div class="slds-form-element">
+		                            <div class="slds-form-element">
+		                            	<div class="slds-button-group" role="group">
+		                            		<apex:commandButton disabled="{!NOT(blnListNotEmpty)}" status="processing" styleClass="slds-button slds-button--neutral" value="Bloquear o Desbloquear" action="{!LockUnlock}" oncomplete="showDialog();"/>
+										</div>
+		                            </div>
+		                        </div>
+		                    </div>
+		  				</div>
+			        </div>
+
+		    </apex:form>
+		    <br/>
+	       	<div class="slds-grid">
+				<div id="worker" class="slds-col slds-m-horizontal--small">
+	  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">Trabajador</h3>
+	  				<div id="caseE" class="slds-box slds-m-top--x-small" style="height: 310px">
+	  					<apex:form rendered="{!blnIsItValidToStart}">
+		                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstLockE}" var="field">
+		                        <tr>
+		                            <td style="text-align: center;">
+		                                <div class="slds-form-element">
+		                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+		                                    <div class="slds-form-element__control">
+		                                        <apex:inputField value="{!relatedWorker[field]}" styleClass="slds-input"/>
+		                                    </div>
+		                                </div>
+		                            </td>
+		                        </tr>
+		                    </apex:repeat>
+			            </apex:form>
+			            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+			                <div class="slds-notify_container" style="position:relative;">
+			                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstLockE}" var="field">
+			                        <tr>
+			                            <td>
+			                                <div class="slds-form-element slds-text-align_left">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>			                    
+			                </div>
+			            </apex:form>
+	  				</div>
+	  				<div id="case" class="slds-box slds-m-top--x-small" style="height: 265px">
+		  				<apex:form rendered="{!blnIsItValidToStart}">
+		                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstLock}" var="field">
+		                        <tr>
+		                            <td style="text-align: center;">
+		                                <div class="slds-form-element">
+		                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+		                                        <apex:outputText value="{!IF(OR(ISNULL(relatedWorker[field]),ISBLANK(relatedWorker[field])),'No especificado',relatedWorker[field])}"/>
+		                                </div>
+		                            </td>
+		                        </tr>
+		                    </apex:repeat>
+			            </apex:form>
+			            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+			                <div class="slds-notify_container" style="position:relative;">
+			                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstLock}" var="field">
+			                        <tr>
+			                            <td>
+			                                <div class="slds-form-element slds-text-align_left">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+			                </div>
+			            </apex:form>
+	  				</div>
+				</div>	
+				<br/>
+				<!-- <div id="case" class="slds-col slds-m-horizontal--small">
+	  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_015}</h3>
+	  				<div id="case" class="slds-box slds-m-top--x-small" style="height:  220px">
+	  					<apex:form rendered="{!blnIsItValidToStart}">
+		                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplainE}" var="field">
+		                        <tr>
+		                            <td style="text-align: center;">
+		                                <div>
+		                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+		                                    <div>
+		                                        <apex:inputField value="{!caseInstance[field]}" styleClass="slds-input"/>
+		                                    </div>
+		                                </div>
+		                            </td>
+		                        </tr>
+		                    </apex:repeat>
+			            </apex:form>
+			            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+			                <div class="slds-notify_container" style="position:relative;">
+			                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplainE}" var="field">
+			                        <tr>
+			                            <td>
+			                                <div class="slds-form-element slds-text-align_left">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+			                </div>
+			            </apex:form>
+	  				</div>
+	  				<div id="case" class="slds-box slds-m-top--x-small" style="height:  265px">
+	  					<apex:form rendered="{!blnIsItValidToStart}">
+		                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplain}" var="field">
+		                        <tr>
+		                            <td style="text-align: center;">
+		                                <div class="slds-form-element">
+		                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+		                                    <apex:outputText value="{!IF(OR(ISNULL(caseInstance[field]),ISBLANK(caseInstance[field])),'No especificado',caseInstance[field])}"/>
+		                                </div>
+		                            </td>
+		                        </tr>
+		                    </apex:repeat>
+			            </apex:form>
+			            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+			                <div class="slds-notify_container" style="position:relative;">
+			                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplain}" var="field">
+			                        <tr>
+			                            <td>
+			                                <div class="slds-form-element slds-text-align_left">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+			                </div>
+			            </apex:form>
+	  				</div>
+				</div>
+				<br/> -->	
+				<div id="ap" class="slds-col slds-m-horizontal--small">
+	  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_018}</h3>
+	  				<div id="caseE" class="slds-box slds-m-top--x-small" style="height:  310px">
+	  					<apex:form rendered="{!blnIsItValidToStart}">
+		                    <apex:repeat value="{!$ObjectType.Contact.Fieldsets.LstComplain}" var="field">
+		                        <tr>
+		                            <td style="text-align: center;">
+		                                <div class="slds-form-element">
+		                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+		                                        <apex:outputText value="{!IF(OR(ISNULL(relatedAgent[field]),ISBLANK(relatedAgent[field])),'No especificado',relatedAgent[field])}"/>
+		                                </div>
+		                            </td>
+		                        </tr>
+		                    </apex:repeat>
+			            </apex:form>
+			            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+			                <div class="slds-notify_container" style="position:relative;">
+			                    <apex:repeat value="{!$ObjectType.Contact.Fieldsets.LstComplain}" var="field">
+			                        <tr>
+			                            <td>
+			                                <div class="slds-form-element slds-text-align_left">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+			                </div>
+			            </apex:form>
+	  				</div>
+				</div>
+				<br/>
+			</div>
+			<apex:form >
+				<div id="modalDialog" class="slds-hide">
+	          		<div role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+	            		<div class="slds-modal__container">
+	              			<div class="slds-modal__header slds-modal__header slds-modal__header--empty">
+	                			<button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="hideDialog();">
+				                  	<svg class="slds-button__icon slds-button__icon--large" aria-hidden="true">
+				                    	<use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+				                  	</svg>
+				                  	<span class="slds-assistive-text">Close</span>
+				                </button>
+				                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Registrar</h2>
+	              			</div>
+	              			<div class="slds-modal__content slds-p-around--medium">
+	                			<div class="slds-form--stacked">
+	                  				<div class="slds-form-element">
+	                    				
+	                    				<label class="slds-form-element__label" for="Nombre">El estatus del Agente promotor ha sido cambiado</label>
+	                    				
+	                  				</div>
+	                			</div>
+	              			</div>
+	              			<div class="slds-modal__footer">
+	            				<button class="slds-button slds-button--neutral" onclick="hideDialog();">Aceptar</button>
+	              			</div>
+	        			</div>
+	          		</div>
+	          		<div class="slds-backdrop slds-backdrop--open"></div>
+	      		</div>
+	      	</apex:form>
+      		<script type="text/javascript">
+  
+				function showDialog(){
+	  				var dialog = document.getElementById('modalDialog');
+	    			dialog.className = "slds-show";
+				}
+
+				function hideDialog(){
+	  				var dialog = document.getElementById('modalDialog');
+	    			dialog.className = "slds-hide";
+				}
+
+				function save(){
+	  				hideDialog();
+				}
+
+			</script>
+		</body>
+	</html>
+</apex:page>

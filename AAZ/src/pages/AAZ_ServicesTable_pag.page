@@ -1,0 +1,168 @@
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo Rodríguez
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar una tabla donde estén los trámites de tipo 
+Afiliación
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha          Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Samuel Galindo             Creación
+*******************************************************************************-->
+
+<apex:page standardController="Case" sidebar="false" showHeader="false">
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <head>
+	<apex:includeScript value="/support/console/40.0/integration.js"/>
+	<apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+	<apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+	<apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+	<apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/moment.js') }"/>
+	<apex:slds />
+	<meta charset="utf-8"/>
+	<script type="text/javascript">
+		sforce.connection.sessionId='{!GETSESSIONID()}';
+		function setupPage() {
+
+			var querys = {
+				"idRecordType" : "SELECT Id FROM RecordType WHERE SobjectType='Case' AND DeveloperName='affiliation'",
+				"registros"    : "SELECT Account.Name, CaseNumber, LastModifiedDate, NewNSS__c, Owner.Name, RequestDate__c,Status,SubType__c,Type FROM Case WHERE RecordTypeId='replace_id'"
+			};
+
+			var idRecordType ='';
+			var registros = [];
+
+			var state = {
+				tabla : document.getElementById("tabla"),
+				startTime : new Date().getTime()
+			};
+
+			var consulta = sforce.connection.query(querys['idRecordType'], {
+				onSuccess : primeraConsulta,
+				onFailure : failure,
+			});
+
+			function failure(error) {
+				console.log("An error has occurred " + error);
+			}
+
+			function primeraConsulta(result) {
+				var resultado = result.getArray("records");
+				idRecordType = resultado[0]['Id'];
+				var query = querys['registros'];
+				query = query.replace('replace_id', idRecordType);
+				var consulta =  sforce.connection.query(query, {
+					onSuccess : segundaConsulta,
+					onFailure : failure,
+					source    : state
+				});
+			}
+
+			function segundaConsulta(result, source) {
+				var resultados = result.getArray("records");
+				source.tabla.innerHTML = muestraResultados(resultados);
+			}
+
+			function muestraResultados(resultados) {
+				var tabla = '';
+
+				if (resultados.length > 0) {
+					tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 9px;">';
+					tabla += '<thead>';
+					tabla += '<tr class="slds-text-title_caps" style="font-size: 9px;background: blue;color: white;">';
+					tabla += '<th scope="col">';
+					tabla +=  '{!$Label.AAZ_ServicesTable_001}';
+					tabla += '</th>';
+					tabla += '</thead>';
+					tabla += '<tbody>';
+					for (var i = 0; i < resultados.length; i++) {
+/*
+						var data = resultados[i];
+						tabla += '<tr>';
+						tabla += '<td>';
+						tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_002} : <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Referencia&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+'</span></a></div>';
+						tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_003} : <span style="font-weight: bold;">'+data.FatherLastName__c+'</span></div>';
+						tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_004} : <span style="font-weight: bold;">'+data.MaternalLastName__c+'</span></div>';
+						tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_005} : <span style="font-weight: bold;">'+data.Phone__c+'</span></div>';
+						tabla += '</td>';
+						tabla += '</tr>';
+*/
+					}
+					tabla += '</tbody>';
+					tabla += '</table>';
+
+				}
+				return tabla;
+
+			}
+
+/*
+
+		function muestraReferencias(referencias) {
+		var tabla = '';
+		if (referencias.length > 0) {
+		tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 9px;">';
+		tabla += '<thead>';
+		tabla += '<tr class="slds-text-title_caps" style="font-size: 9px;background: blue;color: white;">';
+		tabla += '<th scope="col">';
+		tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_001}';
+		tabla += '</th>';
+		tabla += '</thead>';
+		tabla += '<tbody>';
+		for (var i = 0; i < referencias.length; i++) {
+		var data = referencias[i];
+		tabla += '<tr>';
+		tabla += '<td>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_002} : <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Referencia&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+'</span></a></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_003} : <span style="font-weight: bold;">'+data.FatherLastName__c+'</span></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_004} : <span style="font-weight: bold;">'+data.MaternalLastName__c+'</span></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_005} : <span style="font-weight: bold;">'+data.Phone__c+'</span></div>';
+		tabla += '</td>';
+		tabla += '</tr>';
+		}
+		tabla += '</tbody>';
+		tabla += '</table>';
+
+		}
+		return tabla;
+		}
+
+		function muestraBeneficiarios(beneficiaries) {
+		var tabla = '';
+		if (beneficiaries.length > 0) {
+		tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 9px;">';
+		tabla += '<thead>';
+		tabla += '<tr class="slds-text-title_caps" style="font-size: 9px;background: blue;color: white;">';
+		tabla += '<th scope="col">';
+		tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_008}';
+		tabla += '</th>';
+		tabla += '</thead>';
+		tabla += '<tbody>';
+		for (var i = 0; i < beneficiaries.length; i++) {
+		var data = beneficiaries[i];
+		tabla += '<tr>';
+		tabla += '<td>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_002} : <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiario&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+'</span></a></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_003} : <span style="font-weight: bold;">'+data.FatherLastName__c+'</span></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_004} : <span style="font-weight: bold;">'+data.MaternalLastName__c+'</span></div>';
+		tabla += '<div> {!$Label.AAZ_AccountDetailsFromProcedure_005} : <span style="font-weight: bold;">'+data.Phone__c+'</span></div>';
+		tabla += '</td>';
+		tabla += '</tr>';
+		}
+		tabla += '</tbody>';
+		tabla += '</table>';
+		}
+		return tabla;
+		}
+*/		
+		}
+	</script>
+
+    </head>
+
+    <body class="slds-scope" style="width:100%;" onload="setupPage();">
+      <div id="tabla"></div><br/>
+    </body>
+  </html>	
+</apex:page>

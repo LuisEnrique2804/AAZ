@@ -1,0 +1,51 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo la realización de un refresh
+    sobre la pestaña principal
+
+    Cambios (Versiones)
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción
+    *****   *************  *****************************    *********************************
+     0.1     13-07-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     13-07-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     13-07-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+     1.1     11-08-2017    Luis Enrique Garcia Sanabria     Ajustes
+     1.2     15-10-2017    Daniel Peñaloza     Ajustes
+*********************************************************************************************/-->
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false">
+	<apex:includeScript value="/support/console/39.0/integration.js"/>
+    <script type="text/javascript">
+        sforce.console.getEnclosingPrimaryTabId(executeProcess);
+
+        var currentTabId;
+        function executeProcess(result) {
+            currentTabId = result.id;
+            if('{! $CurrentPage.parameters.previousTabId }' == '' || '{! $CurrentPage.parameters.previousTabId }' == null) {
+                openNewTab();
+            } else {
+                sforce.console.closeTab('{! $CurrentPage.parameters.previousTabId }', openNewTabClosingPrevious);
+            }
+        };
+
+        function openNewTab() {
+            sforce.console.openPrimaryTab(null,'{! $CurrentPage.parameters.nextURL }', true, '{! $CurrentPage.parameters.newTabName }',closeCurrentPage);
+        }
+
+        function openNewTabClosingPrevious (result) {
+            var url = '{!$CurrentPage.parameters.nextURL}';
+            var currentOrder = '{!$CurrentPage.parameters.currentOrder}';
+            var docTypeId = '{!$CurrentPage.parameters.docTypeId}';
+            var pageNumber = '{!$CurrentPage.parameters.pageNumber}';
+            var url = url + '?currentOrder=' + currentOrder + '&docTypeId=' + docTypeId + '&pageNumber=' + pageNumber;
+
+            sforce.console.openPrimaryTab(null, url, true, '{! $CurrentPage.parameters.newTabName }',closeCurrentPage);
+        };
+
+        function closeCurrentPage(result){
+            sforce.console.closeTab(currentTabId);
+        };
+    </script>
+</apex:page>

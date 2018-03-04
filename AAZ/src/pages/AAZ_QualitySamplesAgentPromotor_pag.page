@@ -1,0 +1,839 @@
+<apex:page showHeader="false" applyHtmlTag="false" applyBodyTag="false" controller="AAZ_QualitySamples_ctr">
+<head>
+    <apex:slds />
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+        <script src="{!URLFOR($Resource.AAZ_appiphonyLightningJs, '/jquery.aljs-init.min.js')}"></script>
+        <script src="{!URLFOR($Resource.AAZ_appiphonyLightningJs, '/jquery.aljs-datepicker.min.js')}"></script>
+        <apex:includeScript value="http://momentjs.com/downloads/moment.js"/>
+        <apex:includeScript value="{! $Resource.TablaSLDS }"/>
+        <apex:includeScript value="/support/console/26.0/integration.js"/>
+
+<script type="text/javascript">
+    //Datepicker Code script-- Starts
+    var $j = jQuery.noConflict();
+    //Assigning SLDS Static Resource Path To A Variable To Use It With ALJS Initialization
+    var assetsLoc = '{!URLFOR($Asset.SLDS)}';
+    var eventDateValue = '';
+    //Override Common Settings with SLDS Static Resource Path (Optional)
+    $j.aljsInit({
+    assetsLocation: assetsLoc, // Specifies the directory containing SLDS's assets directory
+    scoped: true // Specifies whether or not the page is scoped using the slds class
+    });
+    function createLI(valor,idCampo,ulVar)
+    {
+      console.log(valor+'---'+idCampo);
+      var idValor=getCleanedString(valor)+getCleanedString(idCampo);
+      var nuevoReg = $j("#" + idValor);
+      console.log(nuevoReg.val());
+      if(nuevoReg.val() === undefined) {
+        $j("#"+ulVar).append('<li id="'+idValor+'" role="presentation" class="slds-listbox__item"><span class="slds-pill" role="option" tabindex="0" aria-selected="true"><span class="slds-pill__label" title="Option A">'+valor+'</span><span class="slds-icon_container slds-pill__remove" title="Remove"><svg onClick="removeObject(\''+idValor+'\')" class="slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}" /></svg><span class="slds-assistive-text">Press delete or backspace to remove</span></span></span></li>');
+      }
+      // rendAgentePromotor();
+    }
+
+    function createLIIDSFDC(valor,ValorMostrar,idCampo,ulVar,idHidden)
+    {
+      console.log('createLIIDSFDC: '+valor+'---idCampo >'+idCampo+'<----'+ulVar);
+      var idValor=getCleanedString(valor)+getCleanedString(idCampo);
+      var nuevoReg = $j("#" +idValor);
+      console.log(nuevoReg.val());
+      if(nuevoReg.val() === undefined && valor!='---' && valor!='') {
+        $j("#"+ulVar).append('<li id="'+idValor+'" class="'+ulVar+'" role="presentation" class="slds-listbox__item"><span class="slds-pill" role="option" tabindex="0" aria-selected="true"><span class="slds-pill__label" title="Option A">'+ValorMostrar+'</span><span class="slds-icon_container slds-pill__remove" title="Remove"><svg onClick="removeObject(\''+idValor+'\',\''+ulVar+'\',\''+ValorMostrar+'\',\''+idHidden+'\',\''+idCampo+'\')" class="slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}" /></svg><span class="slds-assistive-text">Press delete or backspace to remove</span></span></span></li>');
+
+      console.log(ulVar=='ulImplementador');
+      document.getElementById("j_id0:idForm:"+idHidden).value=concatenar(ValorMostrar,document.getElementById("j_id0:idForm:"+idHidden).value);
+      if(ulVar=='ulImplementador'){
+        rendAgentePromotor(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipo'){
+        rendListSubservice(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoServ'){
+        // alert(document.getElementById("j_id0:idForm:"+idHidden).value);
+        rendTypeRetiro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoSeguro') {
+        rendTypePension(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoPension') {
+        rendRegimen(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulDivisional') {
+        rendEstado(document.getElementById("j_id0:idForm:"+idHidden).value);
+      }else if(ulVar=='ulEstado') {
+        rendMunicipio(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulMunicipio') {
+        rendSucursal(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoSeguro') {
+        rendSeguro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      }
+      else if(ulVar=='ulTiporetiro') {
+        rendSeguro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      }
+
+    }
+    document.getElementById(idCampo).selectedIndex="0";
+    }
+    function concatenar(valornuevo,valorCampo)
+    {
+      var retorno;
+      // console.log('valorCampo: '+valorCampo+ ' valornuevo '+valornuevo);
+        if(valorCampo=='')
+        {
+          retorno=valornuevo;
+        }
+        else {
+          retorno=valorCampo+';'+valornuevo;
+        }
+        // console.log('retorno '+retorno);
+        return retorno;
+    }
+
+    function removeObject(idEliminar,ulVar,ValorQuitar,idHidden,idCampo){
+      //console.log('linea 29' +idEliminar);
+      //console.log($j("#"+idEliminar));
+      $j("#"+idEliminar).remove();
+
+      document.getElementById("j_id0:idForm:"+idHidden).value=deleteVar(document.getElementById("j_id0:idForm:"+idHidden).value,ValorQuitar);
+      if(ulVar=='ulImplementador'){
+        rendAgentePromotor(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipo'){
+        rendListSubservice(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoServ'){
+        // alert(document.getElementById("j_id0:idForm:"+idHidden).value);
+        rendTypeRetiro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoSeguro') {
+        rendTypePension(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoPension') {
+        rendRegimen(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulDivisional') {
+        // removerObjectReload('ulDivisional');
+        rendEstado(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulEstado') {
+        rendMunicipio(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulMunicipio') {
+        rendSucursal(document.getElementById("j_id0:idForm:"+idHidden).value);
+      } else if(ulVar=='ulTipoSeguro') {
+        rendSeguro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      }else if(ulVar=='ulTiporetiro') {
+        rendSeguro(document.getElementById("j_id0:idForm:"+idHidden).value);
+      }
+      document.getElementById(idCampo).selectedIndex="0";
+    }
+
+
+    function deleteVar(valHidden,valorquitar)
+    {
+      var vector=valHidden.split(';');
+      var retorno='';
+      for(i = 0; i < vector.length; i++)
+      {
+        if(vector[i]!=valorquitar)
+        {
+          if(retorno=='')
+          {
+            retorno=vector[i];
+          }
+          else {
+            retorno=retorno+';'+vector[i]
+          }
+          // retorno=retorno==''?+vector[i]:retorno+';'+vector[i];
+        }
+      }
+      return retorno;
+    }
+
+    function getCleanedString(cadena){
+       // Definimos los caracteres que queremos eliminar
+       var specialChars = "!@#$^&%*()+=-[]\/{}|:<>?,.";
+
+       // Los eliminamos todos
+       for (var i = 0; i < specialChars.length; i++) {
+           cadena= cadena.replace(new RegExp("\\" + specialChars[i], 'gi'), '');
+       }
+       // Lo queremos devolver limpio en minusculas
+       cadena = cadena.toLowerCase();
+
+       // Quitamos espacios y los sustituimos por _ porque nos gusta mas asi
+       cadena = cadena.replace(/ /g,"_");
+
+       // Quitamos acentos y "ñ". Fijate en que va sin comillas el primer parametro
+       cadena = cadena.replace(/á/gi,"a");
+       cadena = cadena.replace(/é/gi,"e");
+       cadena = cadena.replace(/í/gi,"i");
+       cadena = cadena.replace(/ó/gi,"o");
+       cadena = cadena.replace(/ú/gi,"u");
+       cadena = cadena.replace(/ñ/gi,"n");
+       return cadena.toString();
+    }
+    function callActionFunction() {
+        var fi = document.getElementById("dateInicio").value;
+        var ff = document.getElementById("dateFin").value;
+        var status=document.getElementById("j_id0:idForm:strStatus2").value;
+        var nss;//=document.getElementById("j_id0:idForm:nss").value;
+        var CURP;//=document.getElementById("j_id0:idForm:CURP").value;
+        var rfc;//=document.getElementById("j_id0:idForm:rfc").value;
+        var neap=document.getElementById("numempleap").value;
+        var nagp;//=document.getElementById("numagentepromotor").value;
+        var naval=document.getElementById("numEmpsval").value;
+        // var rMuestra=document.getElementById("radioMuestra").checked;
+        // var rAsig=document.getElementById("radioAsignacion").checked;
+        // console.log('radio '+rMuestra);
+        acBusqueda(fi,ff,status,nss,CURP,rfc,neap,nagp, naval);
+    }
+
+    function validatePorcentaje()
+    {
+        var x=document.getElementById("j_id0:idForm:strProrcentaje").value;
+        var xN=document.getElementById("j_id0:idForm:strNroResultados").value;
+        console.log('Porcentaje '+x+' nro Resultados '+xN);
+
+        document.getElementById("porcentajeIncorrecto").style.display="none";
+        document.getElementById("NroMayor").style.display="none";
+        document.getElementById("j_id0:idForm:idAsignar").disabled = false;
+
+        if (x!="" && (isNaN(x) || x < 1 || x > 100)) {
+          console.log('PRIMER IF');
+            document.getElementById("porcentajeIncorrecto").style.display="block";
+            document.getElementById("j_id0:idForm:idAsignar").disabled = true;
+        }
+        //   } else if(xN!="") {
+        //     console.log('SEGUNDO IF');
+        //     //document.getElementById("j_id0:idForm:strProrcentaje").value="";
+        //     document.getElementById("digResultado").style.display="block";
+        //     document.getElementById("porcentajeIncorrecto").style.display="none";
+        //     document.getElementById("j_id0:idForm:idAsignar").disabled = true
+        //     // document.getElementById("j_id0:idForm:buscarID").disabled = true;
+        //     //alert("Se encuentra deligenciado el campo Nro Resultado");
+        // }
+        // else {
+        //     console.log('TERCCER IF');
+        //     document.getElementById("j_id0:idForm:idAsignar").disabled = false;
+        //     document.getElementById("digResultado").style.display="block";
+        //     document.getElementById("porcentajeIncorrecto").style.display="block";
+        // }
+        // validateNresult();
+    }
+
+    function validateNresult(nroConsulta)
+    {
+        var x=document.getElementById("j_id0:idForm:strProrcentaje").value;
+        var xN=document.getElementById("j_id0:idForm:strNroResultados").value;
+
+        document.getElementById("NroMayor").style.display="none";
+        document.getElementById("porcentajeIncorrecto").style.display="none";
+        document.getElementById("j_id0:idForm:idAsignar").disabled = false;
+
+        // var nroConsulta="{!Ntot}";
+        console.log('nroConsulta: '+nroConsulta);
+        if(parseInt(xN)>parseInt(nroConsulta))
+        {
+          document.getElementById("j_id0:idForm:idAsignar").disabled = true;
+          document.getElementById("NroMayor").style.display="block";
+          console.log('Numero Mayor mayor');
+        }
+    }
+ //Datepicker Code script -- End
+    function Loadpage(){
+    }
+
+</script>
+</head>
+
+    <style>
+        body{
+            margin:3px !important;
+        }
+        pagecontainer{
+            padding:50px;
+        }
+    </style>
+
+    <apex:includeScript value="{! $Resource.TablaSLDS }"/>
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <body class="slds-scope">
+        <apex:form id="idForm">
+        <!-- Campos Hidden para las consultas -->
+        <apex:inputHidden value="{!hiddenImplementador}" id="hiddenImplementador"/>
+        <apex:inputHidden value="{!hiddenAgentePromotor}" id="hiddenAgentePromotor"/>
+        <apex:inputHidden value="{!hiddenAnalistaValidador}" id="hiddenAnalistaValidador"/>
+        <apex:inputHidden value="{!hiddenTipoServicio}" id="hiddenTipoServicio"/>
+        <apex:inputHidden value="{!hiddenSubTipoServicio}" id="hiddenSubTipoServicio"/>
+        <apex:inputHidden value="{!hiddenTipoRetiro}" id="hiddenTipoRetiro"/>
+        <apex:inputHidden value="{!hiddenTipoSeguro}" id="hiddenTipoSeguro"/>
+        <apex:inputHidden value="{!hiddenTipoPension}" id="hiddenTipoPension"/>
+        <apex:inputHidden value="{!hiddenTipoRegimen}" id="hiddenTipoRegimen"/>
+        <apex:inputHidden value="{!hiddenTerritorio}" id="hiddenTerritorio"/>
+        <apex:inputHidden value="{!hiddenEstadoG}" id="hiddenEstadoG"/>
+        <apex:inputHidden value="{!hiddenMunicipio}" id="hiddenMunicipio"/>
+        <apex:inputHidden value="{!hiddenSucursal}" id="hiddenSucursal"/>
+        <apex:message />
+           <div class="slds-align--absolute-center" >
+                <apex:outputPanel id="tstpopup">
+                    <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp}"/>
+                        <apex:outputPanel styleClass="custPopup" layout="block" rendered="{!displayPopUp}">
+                            <section role="dialog" tabindex="-1" aria-label="Meaningful description of the modal content" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                        <span class="slds-icon_container slds-icon-doctype-xml" title="Description of icon when needed">
+                                            <svg class="slds-icon" aria-hidden="true">
+                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/doctype-sprite/svg/symbols.svg#xml')}" />
+                                            </svg>
+                                        <span class="slds-assistive-text">Description of icon</span>
+                                        </span>
+                                        <apex:outputText value="{!strMensaje}" escape="false" />
+                                    </div>
+                                    <div class="slds-button-group slds-align_absolute-center" role="group">
+                                        <apex:commandButton value="Aceptar" action="{!closePopup}" styleClass="slds-button slds-button_brand" rerender="tstpopup" onclick="location.reload();" />
+                                    </div>
+                                </div>
+                            </section>
+                        </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:actionStatus id="processing">
+                    <apex:facet name="start">
+                        <div class="slds-spinner_container slds-is-fixed">
+                           <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                <span class="slds-assistive-text">Processing</span>
+                                    <div class="slds-spinner__dot-a"></div>
+                                        <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionStatus>
+
+
+             <apex:outputPanel id="thePanel" layout="block" style="width: 800px;" rendered="{!IF(lstwrapQ.size> 0 || userQuelity,false,true)}">
+                <script type="text/javascript">
+                $j(document).ready(function() {
+                //Initializing Datepicker
+                    $j('#dateInicio').datepicker({
+                        initDate: moment(), // Assign Today's Date
+                        format: 'YYYY-MM-DD', // Specify the Date Format Of Datepicker Input Field (YYYY-MM-DD,YYYY/MM/DD ,DD/MM/YYYY ....etc)
+                        // onChange function to change the value once it is selected
+                       onChange: function(datepicker) {                            // Specify the format
+                          console.log('Carga Componentes de la fecha');
+                           eventDateValue =moment(datepicker.selectedFullDate._d).format('DD/MM/YYYY');
+
+                       }
+                     }
+                 );
+                 $j('#dateFin').datepicker({
+                 initDate: moment(), // Assign Today's Date
+                 format: 'YYYY-MM-DD', // Specify the Date Format Of Datepicker Input Field (YYYY-MM-DD,YYYY/MM/DD ,DD/MM/YYYY ....etc)
+                 // onChange function to change the value once it is selected
+                 onChange: function(datepicker) {
+                 // Specify the format
+                 eventDateValue =moment(datepicker.selectedFullDate._d).format('DD/MM/YYYY');
+                 }
+                 });
+
+            });//init
+            </script>
+
+               <apex:outputPanel id="panelOptions">
+                  <div class="slds-form slds-form_compound thisOptions">
+                      </div>
+               </apex:outputPanel>
+               <apex:outputPanel id="panelCheckAsig">
+                 <div class="slds-form slds-form_compound">
+                    <fieldset class="slds-form-element">
+                       <legend class="slds-form-element__label slds-text-title_caps">Especifico</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                        <label class="slds-form-element__label" for="input-02">Número de empleado AP</label>
+                                        <!-- <apex:inputText value="{!strNumeroEmpleadoAP}" id="nropempap" styleClass="slds-input"/> -->
+                                        <input type="text" id="numempleap" class="slds-input" placeholder="Número de empleado AP" />
+                                    </div>
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                        <label class="slds-form-element__label" for="input-02">Nùmero de agente promotor</label>
+                                        <input type="text" id="numagentepromotor" class="slds-input" placeholder="Nùmero de agente promotor" />
+                                    </div>
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                        <label class="slds-form-element__label" for="input-02">Nùmero de Empleado analista validador</label>
+                                        <input type="text" id="numEmpsval" class="slds-input" placeholder="Nùmero de Empleado analista validador" />
+                                    </div>
+                                </div>
+                            </div>
+                    </fieldset>
+                    <fieldset class="slds-form-element">
+                            <legend class="slds-form-element__label slds-text-title_caps">Busqueda General</legend>
+                            <div class="slds-form-element__group">
+                                <div class="slds-form-element__row">
+                                   <div class="slds-form-element slds-size_1-of-2">
+                                        <label class="slds-form-element__label" for="input-04">Estado</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container">
+                                              <apex:selectList multiselect="false" styleClass="slds-select" size="1"  html-placeholder="Select an Option" id="strStatus2">
+                                                  <apex:selectOption itemValue="---" itemLabel="---"/>
+                                                  <apex:selectOption itemValue="Aceptado" itemLabel="Aceptado" />
+                                                  <apex:selectOption itemValue="Rechazado" itemLabel="Rechazado" />
+                                                  <!-- Se quitan por solicitud de thalia 20/10/2017
+                                                   <apex:selectOption itemValue="Autorizada" itemLabel="Autorizada" />
+                                                  <apex:selectOption itemValue="Pendiente por Documento" itemLabel="Pendiente por Documento" /> -->
+                                              </apex:selectList>
+                                    </div>
+                                </div>
+                                    </div>
+                      
+                                   
+                                    
+                                </div>
+
+                                <div class="slds-form-element__row">
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                        <label class="slds-form-element__label" for="input-04">Divisional</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container">
+                                            <apex:selectList value="{!strTerritorioG}" multiselect="false" styleClass="slds-select"  id="strTerritorioG" size="1" html-placeholder="Select an Option" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulDivisional','hiddenTerritorio')">
+                                               <apex:selectOption itemValue="---" itemLabel="---"/>
+                                               <apex:selectOptions value="{!ListDivisional}"/>
+                                            </apex:selectList>
+                                        </div>
+                                        <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulDivisional">
+                                        </ul>
+                                    </div>
+                                    </div>
+                                     <div class="slds-form-element slds-size_1-of-2">
+                                      <label class="slds-form-element__label" for="input-04">Estado</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container">
+                                            <apex:selectList value="{!strEstadoG}" id="strEstadoG" multiselect="false" styleClass="slds-select" size="1" html-placeholder="Select an Option" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulEstado','hiddenEstadoG')">
+                                            <apex:selectOption itemValue="---" itemLabel="---"/>
+                                             <apex:selectOptions value="{!ListEstado}"/>
+                                            </apex:selectList>
+                                        </div>
+                                        <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulEstado">
+                                        </ul>
+                                    </div>
+                                    </div>
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                      <label class="slds-form-element__label" for="input-04">Municipio</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container">
+                                            <apex:selectList value="{!strMunicipio}" id="strMunicipio" multiselect="false" styleClass="slds-select" size="1" html-placeholder="Select an Option" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulMunicipio','hiddenMunicipio')">
+                                            <apex:selectOption itemValue="---" itemLabel="---"/>
+                                             <apex:selectOptions value="{!ListMunicipio}"/>
+                                            </apex:selectList>
+                                        </div>
+                                        <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulMunicipio">
+                                        </ul>
+                                    </div>
+                                    </div>
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                      <label class="slds-form-element__label" for="input-04">Sucursal</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-select_container">
+                                            <apex:selectList value="{!strSucursal}" id="strSucursal" multiselect="false" styleClass="slds-select" size="1" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulSucursal','hiddenSucursal')">
+                                            <apex:selectOption itemValue="---" itemLabel="---"/>
+                                            <apex:selectOptions value="{!ListSucursal}"/>
+                                            </apex:selectList>
+                                        </div>
+                                        <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulSucursal">
+                                        </ul>
+                                    </div>
+                                    </div>
+                                </div>
+                                  <div class="slds-form-element__row">
+
+                                </div>
+                                <div class="slds-form-element__row">
+                                     <div class="slds-form-element slds-size_1-of-2">
+                                      <label class="slds-form-element__label" for="input-04">Implementador</label>
+                                        <div class="slds-form-element__control">
+                                          <div class="slds-select_container">
+                                            <apex:selectList value="{!strImplementador}" id="strImplementador" multiselect="false" styleClass="slds-select" size="1" html-placeholder="Select an Option" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulImplementador','hiddenImplementador')">
+                                               <apex:selectOption itemValue="---" itemLabel="---"/>
+                                               <apex:selectOptions value="{!ListImplemtador}"/>
+                                            </apex:selectList>
+                                          </div>
+                                            <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulImplementador">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="slds-form-element slds-size_1-of-2">
+                                      <label class="slds-form-element__label" for="input-04">Analista Validador</label>
+                                        <div class="slds-form-element__control">
+                                          <div class="slds-select_container">
+                                            <apex:selectList value="{!strAnalistaVal}" id="strAnalistaVal" multiselect="false" styleClass="slds-select" size="1" html-placeholder="Select an Option" onchange="createLIIDSFDC(this.value,this.options[this.selectedIndex].text,this.id,'ulAnalistaValida','hiddenAnalistaValidador')">
+                                               <apex:selectOption itemValue="---" itemLabel="---"/>
+                                               <apex:selectOptions value="{!ListAnalista}"/>
+                                            </apex:selectList>
+                                          </div>
+                                            <ul class="slds-listbox slds-listbox_horizontal slds-p-top_xxx-small" role="group" aria-label="Selected Options:" id="ulAnalistaValida">
+                                            </ul>
+                                        </div>
+                                        <br/>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element__row">
+                                  <div class="slds-form-element slds-size_1-of-2">
+                                     <label class="slds-form-element__label" for="dateInicio">Fecha Inicio</label>
+                                     <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                         <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                                             <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+                                         </svg>
+                                         <input id="dateInicio" class="slds-input" type="text" placeholder="Fecha Inicio" label="Fecha de Inicio" value="{!strFechaInicio}"/>
+                                      </div>
+                                   </div>
+                                   <div class="slds-form-element slds-size_1-of-2">
+                                     <label class="slds-form-element__label" for="dateFin">Fecha Fin</label>
+                                     <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                         <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+                                             <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+                                         </svg>
+                                         <input id="dateFin" class="slds-input" type="text" placeholder="Fecha Fin" label="Fecha Fin"/>
+                                     </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                 </div>
+              </apex:outputPanel>
+              <apex:outputPanel id="panelButton" >
+                <div class="slds-button-group slds-align_absolute-center" role="group">
+                 <apex:commandButton status="msg_block" value="Busqueda" styleClass="slds-button slds-button_neutral" onClick="callActionFunction();return false;" id="buscarID" rerender="tstpopup"/>
+               </div>
+               </apex:outputPanel>
+</apex:outputPanel>
+
+<apex:outputPanel id="resultado" layout="block" style="width: 900px;" rendered="{!IF(lstwrapQ.size>0 && userQuelity==false,true,false)}">
+<div class="slds-form slds-form_compound">
+  <fieldset class="slds-form-element" >
+             <legend class="slds-form-element__label slds-text-title_caps">Filtro resultados</legend>
+             <div class="slds-form-element__group">
+                 <div class="slds-form-element__row">
+                      <div class="slds-form-element slds-size_1-of-2">
+                                 <label class="slds-form-element__label" for="input-01">Porcentaje %</label>
+                                 <apex:inputText value="{!strProrcentaje}" id="strProrcentaje" styleClass="dbl-mask slds-input" onchange="validatePorcentaje();"/>
+                                   <span id="porcentajeIncorrecto" style="color:red; display:none;"> El porcentaje no es correcto </span>
+                                  <span id="digResultado" style="color:red; display:none;">Se encuentra deligenciado el campo Nro Resultado</span>
+                      </div>
+                      <div class="slds-form-element slds-size_1-of-2">
+                                 <label class="slds-form-element__label" for="input-02"># Resultados</label>
+                                 <apex:inputText value="{!strNroResultados}" id="strNroResultados" styleClass="dbl-mask slds-input" onchange="validateNresult('{!Ntot}')"/>
+                                 <span id="digResultado" style="color:red; display:none;">Se encuentra deligenciado el campo Nro Resultado</span>
+                                 <span id="NroMayor" style="color:red; display:none;">El numero de resultados es mayor al resultado de la consulta</span>
+                      </div>
+                 </div>
+                 <div class="slds-form-element slds-size_1-of-2 slds-grid_align-end">
+                   <apex:commandButton value="< Atras"  action="{!closePopup}" status="idAtras" styleClass="slds-button slds-button_stateful slds-button_success"/>
+                   <apex:commandButton value="Asignar" action="{!NexAsignar}" status="idactionstatus" reRender="idForm" disabled="{!DisableAsignar}" styleClass="slds-button slds-button_neutral" id="idAsignar"/>
+                 </div>
+             </div>
+  </fieldset>
+</div>
+<div class="slds-button-group slds-grid_align-end" role="group">
+  <apex:outputPanel >
+
+    <apex:outputLabel styleClass="slds-form-element__label" value="  Número Registros {!Ntot} "/>
+    <apex:commandButton value="< Anterior"  action="{!Previous}" status="idactionstatus" reRender="idForm" disabled="{!DisablePrevious}" styleClass="slds-button slds-button_neutral"/>
+    <apex:commandButton value="Siguiente >" action="{!Next}" status="idactionstatus" reRender="idForm" disabled="{!DisableNext}" styleClass="slds-button slds-button_neutral"/>
+    <!-- <apex:commandButton value="Asignar" action="{!NexAsignar}" status="idactionstatus" reRender="idForm" disabled="{!DisableAsignar}" styleClass="slds-button slds-button_neutral"/> -->
+     <apex:outputLabel styleClass="slds-form-element__label" value=" Pág. {!Nini} de {!nfim}" />
+  </apex:outputPanel>
+</div>
+<table class="slds-table slds-table_bordered slds-table_resizable-cols slds-table_fixed-layout" role="grid">
+  <thead>
+    <tr class="slds-line-height_reset">
+      <th scope="col" class="slds-text-align_right" style="width: 3.25rem;">
+        <div class="slds-th__action slds-th__action_form">
+          <span class="slds-checkbox">
+              <apex:inputCheckbox id="checkbox-17">
+                <apex:actionSupport event="onclick" action="{!GetSelected}" onsubmit="checkAll(this)"/>
+             </apex:inputCheckbox>
+            <label class="slds-checkbox__label" for="j_id0:idForm:checkbox-17">
+              <span class="slds-checkbox_faux"></span>
+              <span class="slds-form-element__label slds-assistive-text">Select All</span>
+            </label>
+          </span>
+        </div>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Account Name">Tramite</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="NSS Trabajador">NSS Trabajador</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+         <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Nombre">Nombre</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+        <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Tipo">Tipo</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Subtipo">Subtipo</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Confidence">Sub sub tipo</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+      <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Confidence">Recibido</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+        <th class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+        <a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" tabindex="0">
+          <span class="slds-assistive-text">Sort </span>
+          <span class="slds-truncate" title="Confidence">Liberacion</span>
+          <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+        </a>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+       <apex:variable var="count" value="{!0}"   />
+    <apex:repeat value="{!lstwrapQ}" var="c" id="theRepeat">
+    <tr class="slds-hint-parent">
+      <td role="gridcell" class="slds-text-align_right" style="width: 3.25rem;">
+        <span class="slds-checkbox">
+           <apex:inputCheckbox value="{!c.selected}" id="checkedone">
+              <!-- <apex:actionSupport event="onclick" action="{!GetSelected}" rerender="Selected_PBS"/> -->
+           </apex:inputCheckbox>
+                     <label class="slds-checkbox__label" for="j_id0:idForm:theRepeat:{!count}:checkedone">
+            <span class="slds-checkbox_faux"></span>
+            <span class="slds-form-element__label slds-assistive-text">Select item 1</span>
+          </label>
+        </span>
+      </td>
+      <th scope="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.FolioNSS__c}">{!c.QualityCase.FolioNSS__c}</div>
+      </th>
+      <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.Account.NSS__c}">{!c.QualityCase.Account.NSS__c}</div>
+      </td>
+        <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.Account.Name}">{!c.QualityCase.Account.Name}</div>
+      </td>
+        <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.Type}">{!c.QualityCase.Type}</div>
+      </td>
+      <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.SubType__c}">{!c.QualityCase.SubType__c}</div>
+      </td>
+      <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.SubSubType__c}">{!c.QualityCase.SubSubType__c}</div>
+      </td>
+     <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.CreatedDate}">
+                    <apex:outputText value=" {0,date,dd'/'MM'/'yyyy}">
+                        <apex:param value="{!c.QualityCase.CreatedDate}"/>
+                    </apex:outputText>
+                </div>
+      </td>
+         <td role="gridcell">
+        <div class="slds-truncate" title="{!c.QualityCase.ClosedDate}">
+                    <apex:outputText value=" {0,date,dd'/'MM'/'yyyy}">
+                        <apex:param value="{!c.QualityCase.ClosedDate}"/>
+                </apex:outputText></div>
+      </td>
+    </tr>
+        <apex:variable value="{!count+1}" var="count"/>  <!--increment-->
+    </apex:repeat>
+  </tbody>
+</table>
+    <br/>
+    <div class="slds-button-group slds-grid_align-end" role="group">
+      <apex:outputPanel >
+        <apex:commandButton value="< Anterior"  action="{!Previous}" status="idactionstatus" reRender="idForm" disabled="{!DisablePrevious}" styleClass="slds-button slds-button_neutral"/>
+        <apex:commandButton value="Siguiente >" action="{!Next}" status="idactionstatus" reRender="idForm" disabled="{!DisableNext}" styleClass="slds-button slds-button_neutral"/>
+         <apex:outputLabel value="Pág. {!Nini} de {!nfim}" />
+      </apex:outputPanel>
+</div>
+    <script>
+        function checkAll(cb)
+        {
+            var inputElem = document.getElementsByTagName("input");
+            document.getElementById("j_id0:idForm:strProrcentaje").disabled  = true;
+            document.getElementById("j_id0:idForm:strNroResultados").disabled  = true;
+            for(var i=0; i<inputElem.length; i++)
+            {
+                if(inputElem[i].id.indexOf("checkedone")!=-1)
+                inputElem[i].checked = cb.checked;
+            }
+        }
+    </script>
+</apex:outputPanel>
+<br/>
+<br/>
+    <apex:outputPanel id="escogerUser" layout="block" style="width: 600px;" rendered="{!userQuelity}">
+        <br/>
+        <div class="slds-form slds-form_compound">
+          <fieldset class="slds-form-element" >
+            <legend class="slds-form-element__label slds-text-title_caps">Asignar por Agente o Cola</legend>
+            <legend class="slds-form-element__label slds-text-title_caps">Nro de tramites a actualizar: {!intLoop}</legend>
+            <div class="slds-form-element__group">
+                <div class="slds-form-element__row">
+                     <div class="slds-form-element slds-size_1-of-2">
+                       <c:SLDSDynamicLookup SLDSResourceName="{!$Asset.SLDS}" ObjectApiName="User" DisplayFieldApiNames="Username,Name" DisplayFieldsPattern="Name - Username"  photo="field->smallPhotoUrl" LabelName="Agente Validador" SetValueToField="{!strIDUser}"/>
+                      </div>
+                      <div class="slds-form-element slds-size_1-of-2">
+                        <c:SLDSDynamicLookup SLDSResourceName="{!$Asset.SLDS}" ObjectApiName="Group" DisplayFieldApiNames="Name" DisplayFieldsPattern="Name" LabelName="Cola" SetValueToField="{!strIDUser}"/>
+                       </div>
+                </div>
+                </div>
+
+          </fieldset>
+         </div>
+
+
+
+
+        <div class="slds-button-group slds-align_absolute-center" role="group">
+         <apex:outputPanel >
+            <apex:commandButton value="< Anterior" reRender="idForm" status="idactionstatus" onclick="previosAsignar()" styleClass="slds-button slds-button_neutral"/>
+            <apex:commandButton value="Guardar" styleClass="slds-button slds-button_neutral" action="{!save}" rerender="tstpopup"/>
+         </apex:outputPanel>
+        </div>
+  </apex:outputPanel>
+
+    </div>
+
+                </apex:form>
+                <apex:form id="OtroActionFuction">
+
+                <apex:actionFunction name="acBusqueda" action="{!busqueda}" reRender="idForm" status="processing">
+                    <apex:param id="strFechaInicio" name="strFechaInicio" value="" />
+                    <apex:param id="strFechaFin" name="strFechaFin" value="" />
+                    <apex:param id="strStatus2" name="strStatus2" value="" />
+                    <apex:param id="StrNss" name="StrNss" value="" />
+                    <apex:param id="strCurp" name="strCurp" value="" />
+                    <apex:param id="strRfc" name="strRfc" value="" />
+                    <apex:param id="StrNroEmpleadoAP" name="StrNroEmpleadoAP" value="" />
+                    <apex:param id="strNroAgenteProm" name="strNroAgenteProm" value="" />
+                    <apex:param id="strNroAnVal" name="strNroAnVal" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendAgentePromotor" action="{!getAgentePromotor}" reRender="strAgPromotor" status="processing" oncomplete="removerObjectReload('ulAgentePromotor','j_id0:idForm:strAgPromotor','hiddenAgentePromotor');">
+                <apex:param id="strNombreBuscar" name="hiddenImplementador" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendListSubservice" action="{!getListSubservice}" reRender="strSubtipo" status="processing" oncomplete="removerObjectReload('ulTipoServ','j_id0:idForm:strSubtipo','hiddenSubTipoServicio');">
+                <apex:param id="hiddenTipoServicio" name="hiddenTipoServicio" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendTypeRetiro" action="{!getTypeRetiro}" reRender="strTipoRetiro" status="processing" oncomplete="removerObjectReload('ulTiporetiro','j_id0:idForm:strTipoRetiro','hiddenTipoRetiro');">
+                <apex:param id="hiddenSubTipoServicio" name="hiddenSubTipoServicio" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendTypePension" action="{!getTipoPension}" reRender="strTipoPension" status="processing" oncomplete="removerObjectReload('ulTipoPension','j_id0:idForm:strTipoPension','hiddenTipoPension');">
+                <apex:param id="hiddenTipoSeguro" name="hiddenTipoSeguro" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendRegimen" action="{!getRegimen}" reRender="strTipoRegimen" status="processing" oncomplete="removerObjectReload('ulTipoRegimen','j_id0:idForm:strTipoRegimen','hiddenTipoRegimen');">
+                <apex:param id="hiddenTipoPension" name="hiddenTipoPension" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendEstado" action="{!getEstado}" reRender="strEstadoG" status="processing" oncomplete="removerObjectReload('ulEstado','j_id0:idForm:strEstadoG','hiddenEstadoG');">
+                <apex:param id="hiddenTerritorio" name="hiddenTerritorio" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendMunicipio" action="{!getMunicipio}" reRender="strMunicipio" status="processing" oncomplete="removerObjectReload('ulMunicipio','j_id0:idForm:strMunicipio','hiddenMunicipio');">
+                <apex:param id="hiddenEstadoG" name="hiddenEstadoG" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendSucursal" action="{!getSucursales}" reRender="strSucursal" status="processing" oncomplete="removerObjectReload('ulSucursal','j_id0:idForm:strSucursal','hiddenSucursal');">
+                <apex:param id="hiddenMunicipio" name="hiddenMunicipio" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="rendSeguro" action="{!getListSeguro}" reRender="strTipoSeguro" status="processing" oncomplete="removerObjectReload('ulTipoSeguro','j_id0:idForm:strTipoSeguro','hiddenTipoSeguro');">
+                <apex:param id="hiddenTipoRetiro" name="hiddenTipoRetiro" value="" />
+                </apex:actionFunction>
+
+                <apex:actionFunction name="previosAsignar" action="{!PreviousAsingar}" status="processing">
+                </apex:actionFunction>
+
+              </apex:form>
+                <apex:includeScript value="{!$Resource.SLDSDynamicLookupScript}"/>
+                </body>
+                <script type="text/javascript">
+                function removerObjectReload(hijo,idSelect,idHidden)
+                {
+                  console.log('removerObjectReload -->'+hijo+'---'+idSelect);
+                  var hijos = $j('.'+idSelect);
+                  var assignedRoleId = new Array();
+                    var x = document.getElementById(idSelect);
+                    var i;
+                    // alert(txt);
+                  $j("."+hijo).each( function( index, element ){
+                    // var vli = $j(this).attr('li');
+                    //$j("#"+element.id).remove();
+                    console.log('El ID '+index +'---'+element.id);
+                    var boo=false;
+                    var current = $j(this).find('.slds-pill__label');
+                    var ValorQuitar=current.text();
+                    for (i = 0; i < x.length; i++) {
+                      if(x.options[i].value==ValorQuitar)
+                      {
+                        //alert(current.text());
+                        boo=true;
+                      }
+                    }
+                    if(boo==false)
+                    {
+                      document.getElementById("j_id0:idForm:"+idHidden).value=deleteVar(document.getElementById("j_id0:idForm:"+idHidden).value,ValorQuitar);
+                      $j("#"+element.id).remove();
+                    }
+                    // console.log('  element '+element.find('.slds-pill__label').text());
+                  });
+                }
+                </script>
+                <style type="text/css">
+        .custPopup{
+            background-color: white;
+            /*border-width: 2px;
+            border-style: solid;*/
+            z-index: 9999;
+            left: 50%;
+            /*padding:10px;*/
+            position: absolute;
+            /* These are the 3 css properties you will need to change so the popup
+            displays in the center of the screen. First set the width. Then set
+            margin-left to negative half of what the width is. You can add
+            the height property for a fixed size pop up if you want.*/
+            width: 500px;
+            margin-left: -250px;
+            top:100px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            /*filter: alpha(opacity = 20);*/
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 9998;
+        }
+        .thisOptions{
+            width: 100%;
+            text-align: center;
+            padding: 1em 0em 1em 0em;
+
+        }
+    </style>
+                </html>
+</apex:page>

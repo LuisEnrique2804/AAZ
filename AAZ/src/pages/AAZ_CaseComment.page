@@ -1,0 +1,326 @@
+<!--Observaciones René "Agregar encabezado"-->
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo Rodríguez
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar los comentarios
+relacionados con el trámite.
+Tambien muestra los motivos de rechazo por trámite o por documentos.
+Realizados por Ajax Toolkit Salesforce.
+
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Samuel Galindo         Creación
+0.2     13-07-2017    Samuel Galindo         Construcción
+0.9     03-08-2017    Samuel Galindo         Construcción
+1.0     09-08-2017    Samuel Galindo         Finalización y documentación
+1.1     11-08-2017    Samuel Galindo         Ajustes
+1.2     31-10-2017    Iván Neria             Corrección de errores
+*******************************************************************************-->
+
+<apex:page showHeader="false" sidebar="false" standardController="Case" standardStylesheets="false">
+    <apex:slds />
+    <script src="../../soap/ajax/40.0/connection.js" type="text/javascript"></script>
+    <apex:includeScript value="/support/console/40.0/integration.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/moment.js') }"/>
+    <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/autosize.min.js') }"/>
+    <apex:includeScript value="{! $Resource.TablaSLDS }"/>
+
+    <script type= "text/javascript">
+       var $j = jQuery.noConflict(); //Assigning SLDS Static Resource Pat
+        sforce.connection.sessionId='{!GETSESSIONID()}';
+
+        window.onload = setupPage;
+
+        function setupPage() {
+         
+          var querys = {
+            "comentarios"         : "SELECT Id, CreatedBy.Name, CreatedDate, CommentBody FROM CaseComment WHERE ParentId='{! Case.Id }' ORDER BY CreatedDate DESC",
+            "rechazos_documentos" : "SELECT Id, Document__r.DocumentTypeId__c, Document__r.DocumentType__c, Name FROM ReasonRejection__c WHERE Document__r.RelatedProcedure__c='{! Case.Id}'" ,
+            "rechazos_tramite"    : "SELECT Id, Document__r.DocumentTypeId__c, DescripcionComentario__c, Document__r.DocumentType__c, Name FROM ReasonRejection__c WHERE ProcedureId__r.Id ='{! Case.Id}'"
+          };
+
+          var comentarios = [];
+          var rechazos_documentos = [];
+          var rechazos_tramite = [];
+          var motvs = [];
+          var tramis= [];
+
+          var state = {
+            comentarios : document.getElementById("comentarios"),
+            documentos : document.getElementById("documentos"),
+            tramites : document.getElementById("tramites"),
+            no_rechazos : document.getElementById("no_rechazos"),
+            startTime : new Date().getTime()
+          };
+
+          var consulta = sforce.connection.query(querys['comentarios'], {
+            onSuccess : primeraConsulta,
+            onFailure : failure,
+          });
+
+          function primeraConsulta(result) {
+            comentarios = result.getArray("records");
+            var consulta = sforce.connection.query(querys['rechazos_documentos'], {
+              onSuccess : segundaConsulta,
+              onFailure : failure
+            });
+          }
+
+          function segundaConsulta(result) {
+            rechazos_documentos = result.getArray("records");
+
+            var consulta = sforce.connection.query(querys['rechazos_tramite'], {
+              onSuccess : terceraConsulta,
+              onFailure : failure,
+              source: state
+            });
+          }
+
+          function terceraConsulta(result, source){
+            rechazos_tramite = result.getArray("records");
+            source.comentarios.innerHTML = muestraComentarios(comentarios);
+            // source.documentos.innerHTML = muestraDocumentos(rechazos_documentos);
+            source.no_rechazos.innerHTML = muestraNoRechazos(
+                rechazos_documentos,
+                rechazos_tramite
+            );
+            source.tramites.innerHTML = muestraTramites(rechazos_tramite);
+
+            // Ajusta el input de textarea
+            $('textarea').each(function(){
+              autosize(this);
+            });
+          }
+
+          function failure(error) {
+            console.log("An error has occurred " + error);
+          }
+      }
+
+      function queryFailed(error, source) {
+        console.log("An error has occurred: " + error);
+      }
+
+      function muestraTramites(trams) {
+        var tabla = '';
+        if (trams.length > 0) {
+          tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer">';
+          tabla += '<thead>';
+          tabla += '<tr class="slds-text-title_caps" style="font-size: 12px;background: red;color: white;">';
+          tabla += '<th scope="col">';
+          tabla +=  '{!$Label.AAZ_CaseComment_001}';
+          tabla += '</th>';
+          tabla += '</thead>';
+          tabla += '<tbody>';
+          for (var i = 0; i < trams.length; i++) {
+            var data = trams[i];
+            console.log(data.Id);
+            if(data.DescripcionComentario__c!=null)
+            {
+            console.log(data.DescripcionComentario__c);  
+            }
+            
+            tabla += '<tr id="'+data.Id+'">';
+            tabla += '<td>';
+            tabla += '<div class="slds-scope" > ';
+              //Botón de Eliminar
+              tabla += '<span class="slds-icon_container" >';
+                tabla += '<svg onclick="consulMotivo(\''+data.Id+'\');" aria-hidden="true" class="slds-icon slds-icon_x-small slds-icon-text-default">';
+                  tabla += '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#clear')}" />';
+                tabla += '</svg>';
+              tabla += '<span class="slds-assistive-text">Eliminar</span>';
+            tabla += '</span>';
+            // Fila que muestra el Motivo y sus atributos
+              tabla += '<span> Motivo: </span>';
+              tabla += '<span style="font-weight: bold;">'+data.Name+' '+'</span>';
+              if(data.DescripcionComentario__c != null ){
+               tabla += '<span>'+(data.DescripcionComentario__c!=null)?data.DescripcionComentario__c:''+'</span>'; 
+              }
+              
+            tabla += '</div>';
+            tabla += '</td>';
+            tabla += '</tr>';
+          }
+          tabla += '</tbody>';
+          tabla += '</table>';
+        }
+        return tabla;
+      }
+
+      function muestraNoRechazos(documents, trams) {
+        var tabla = '';
+        if (documents.length == 0 && trams.length == 0) {
+          tabla += '<div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" role="alert">';
+          tabla += '<h2>{!$Label.AAZ_CaseComment_002}</h2>';
+          tabla += '</div>';
+        }
+        return tabla;
+      }
+
+      function muestraDocumentos(documents) {
+        var tabla = '';
+        if (documents.length > 0) {
+          tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer">';
+          tabla += '<thead>';
+          tabla += '<tr class="slds-text-title_caps" style="font-size: 12px;background: red;color: white;">';
+          tabla += '<th scope="col">';
+          tabla +=  '{!$Label.AAZ_CaseComment_003}';
+          tabla += '</th>';
+          tabla += '</thead>';
+          tabla += '<tbody>';
+          for (var i = 0; i < documents.length; i++) {
+            var data = documents[i];
+            tabla += '<tr>';
+            tabla += '<td>';
+            tabla += '<div>{!$Label.AAZ_CaseComment_004}: <span style="font-weight: bold;">'+data.Document__r.DocumentTypeId__c+'</span></div>';
+            tabla += '<div>{!$Label.AAZ_CaseComment_005}: <span style="font-weight: bold;">'+data.Document__r.DocumentType__c+'</span></div>';
+            tabla += '<div>{!$Label.AAZ_CaseComment_006}: <span style="font-weight: bold;">'+data.Name+'</span></div>';
+            tabla += '</td>';
+            tabla += '</tr>';
+          }
+          tabla += '</tbody>';
+          tabla += '</table>';
+        }
+        return tabla;
+      }
+
+      function muestraComentarios(coments) {
+        var tabla = '';
+        if (coments.length > 0) {
+          tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer">';
+          tabla += '<thead>';
+          tabla += '<tr class="slds-text-title_caps" style="font-size: 12px;background: blue;color: white;">';
+          tabla += '<th scope="col">';
+          tabla +=  '{!$Label.AAZ_CaseComment_007}';
+          tabla += '</th>';
+          tabla += '</thead>';
+          tabla += '<tbody>';
+
+          for (var i = 0; i < coments.length; i++) {
+            var data = coments[i];
+            tabla += '<tr>';
+            tabla += '<td>';
+            tabla += '<div title="CreatedBy.Name" style="font-weight: bold;">'+data.CreatedBy.Name+'</div>';
+            tabla += '<div>'+moment(data.CreatedDate).format('MM/DD/YYYY h:mm a')+'</div><br/>';
+            tabla += '<textarea readonly="" style="background: white;" class="slds-textarea">'+data.CommentBody+'\n</textarea>';
+            tabla += '</td>';
+            tabla += '</tr>';
+          }
+
+          tabla += '</tbody>';
+          tabla += '</table>';
+
+          } else {
+              tabla+= '<div class="slds-notify slds-notify_alert slds-theme_info" role="alert">';
+              tabla+= '<h2>{!$Label.AAZ_CaseComment_008}</h2>';
+              tabla+= '</div>';
+          }
+          return tabla;
+      }
+      //Método que obtiene el motivo de rechazo seleccionado para eliminar
+      function consulMotivo(idMotivo){
+        
+        
+         $j("#"+idMotivo).remove();
+         var query2="SELECT Id FROM ReasonRejection__c WHERE Id=\'"+idMotivo+"\'";
+        var result = sforce.connection.query(query2, {
+            onSuccess : success,
+            onFailure : failure
+          });
+
+        }
+        //Método que elimina el motivo de rechazo seleccionado
+      function success(result) {
+        var records = result.getArray("records");
+        var idsForDeletion = [];
+
+          for (var i=0; i<records.length; i++) {
+              idsForDeletion.push(records[i].Id);
+          }
+
+            sforce.connection.deleteIds(idsForDeletion);
+            startRefreshProcess();
+            
+          }
+
+          //Inicia proceso para actualizar el status del caso.
+          //Obtiene Motivos de rechazo Generales
+           var query5 = "SELECT Id, Document__r.DocumentTypeId__c, Document__r.DocumentType__c, Name FROM ReasonRejection__c WHERE ProcedureId__r.Id ='{! Case.Id}'"; 
+          var consulta = sforce.connection.query(query5, {
+            onSuccess : getMotvs,
+            onFailure : failure,
+          });
+          //Obtiene Motivos de rechazo por Documento
+          function getMotvs(result){
+          tramis = result.getArray("records");
+          var query4 = "SELECT Id, Document__r.DocumentTypeId__c, Document__r.DocumentType__c, Name FROM ReasonRejection__c WHERE Document__r.RelatedProcedure__c='{! Case.Id}'"; 
+          var consulta = sforce.connection.query(query4, {
+            onSuccess : getCase,
+            onFailure : failure,
+          });
+          }
+
+          
+          function getCase(result){
+          motvs = result.getArray("records");
+          var query3 ="SELECT Status, Id FROM Case WHERE Id='{!Case.Id}'";
+          var consulta = sforce.connection.query(query3, {
+            onSuccess : changeStatus,
+            onFailure : failure,
+          });
+          }
+        //Método que actualiza status del Caso
+      function changeStatus(result){
+        var records = result.getArray("records");
+        console.log(records);
+        console.log(tramis.length);
+          if(motvs.length ==0 && tramis.length==0 && records[0].Status!='EN VALIDACION' && records[0].Status!='PENDIENTE' && records[0].Status!='PENDIENTE POR DOCUMENTO' && records[0].Status!='PENDIENTE POR SELLO' && records[0].Status!='APROBADO') {
+            records[0].Status = 'EN VALIDACION';
+            var result = sforce.connection.update(records); 
+            startRefreshProcess();
+
+          }            
+
+      }
+      //Método que abre una nueva ventana y cierra la actual para obtener los nuevos valores del tramite
+      function startRefreshProcess(){
+                              var primaryTabId = '';
+                              var currentSubTabId = '';
+                              var currentOrder = '1';
+                              console.log('1');
+                              sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                            }
+                            var redirectProcess = function redirectProcess(result){
+                              if(result.success){
+                                console.log('2');
+                                currentSubTabId = result.id;
+                                var newSubTabURL = encodeURI('/{!Case.Id}');
+                                var newSubTabName = '{!Case.CaseNumber}' ;
+                                var currentTabId = result.id;
+                                var currentOrder = '1';
+                                var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                }
+                                console.log('3');
+                            };
+
+
+      function failure(error) {
+        //alert('You cannot unenroll for:  You are not currently enrolled in this event.'); 
+      }
+
+      
+    </script>
+
+    <div class="slds-scope" style="font-size: 12px;">
+        <div id="no_rechazos"></div>
+        <div id="tramites"> </div><br/>
+        <div id="documentos"> </div><br/>
+        <div id="comentarios"> </div><br/>
+    </div>
+
+</apex:page>

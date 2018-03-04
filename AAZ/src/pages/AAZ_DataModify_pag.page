@@ -1,0 +1,335 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria 
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo mostrar los valores que 
+    se van a comparar para el tramite de modificacion de datos, en esta pagina se van mostar 
+    unicamente los nuevos valores, los cuales se van a comparar con los valos que actualmente 
+    tiene en el registro de de cuenta. 
+     
+    Cambios (Versiones)     
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción     
+    *****   *************  *****************************    *********************************   
+     0.1     14-08-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     14-08-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     14-08-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+     2.0     02-10-2017    Andrés Morales                   Construcción
+*********************************************************************************************/-->
+
+<apex:page standardController="Case" extensions="AAZ_DataModify_ctr" showHeader="false" sidebar="false" standardStylesheets="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:includeScript value="/support/console/40.0/integration.js"/>
+            <apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.JSZIP)}"/>
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/moment.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/autosize.min.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/panzoom.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQueryRotateCompressed.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jqueryeasingmin.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/longclick.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/manipulacionimagen.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.TiffHandlerJS)}"/>
+
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>            
+            <apex:slds />
+            <meta charset="utf-8"/>
+            <script type="text/javascript">
+                sforce.connection.sessionId='{!GETSESSIONID()}';
+                console.log("LLAMA A LA FUNCION");
+                function setupPage() {
+                    var querys = {
+                        "idBeneficiario" : "SELECT Id FROM RecordType WHERE SobjectType='People__c' AND DeveloperName='Beneficiary'",
+                        "CURP" : "SELECT CURP__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id'AND ParentIdBeneficiary__c ='{!strCaseIdentifier}'",
+                        "idReferencia" : "SELECT Id FROM RecordType WHERE SobjectType='People__c' AND DeveloperName='Reference'",
+                        "Beneficiarios" : "SELECT Id, Name__c, FatherLastName__c, MaternalLastName__c, CURP__c, Relationship__c, Percentage__c, Bank__c, Bank_Account__c, CLABE__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id' AND ParentIdBeneficiary__c ='{!strCaseIdentifier}'",
+                        "Referencias" : "SELECT Id, Name__c, FatherLastName__c, MaternalLastName__c, Relationship__c, Percentage__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id' AND ParentIdReference__c='{!strCaseIdentifier}'",
+                        "BeneficiariosCURP" : "SELECT Id, Name__c, FatherLastName__c, isUpdateData__c, MaternalLastName__c, CURP__c, Relationship__c, Percentage__c, Bank__c, Bank_Account__c, CLABE__c, Fx_Relationship__c, Phone__c FROM People__c WHERE CURP__c='replace_curp' AND RecordTypeId='replace_id' AND ParentIdBeneficiary__c='{!strCaseIdentifier}'"
+                    };
+                    var idbeneficiario = 0;
+                    var idreferencia = 0;
+                    var beneficiarios = [];
+                    var referencias = [];
+                    var curp=null;
+                    console.log("SE DECLARARON TODAS LAS VARS");
+                    var state = {
+                        beneficiarios : document.getElementById("beneficiarios"),
+                        startTime : new Date().getTime()
+                    };
+
+                    var consulta = sforce.connection.query(querys['idBeneficiario'], {
+                        onSuccess : primeraConsulta,
+                        onFailure : failure,
+                    });
+
+                    function primeraConsulta(result) {
+                        var resultado = result.getArray("records");
+                        console.log("Id del beneficiario es ="+resultado);
+                        idbeneficiario = resultado[0]['Id'];
+                        //alert('el id:'+idbeneficiario);
+                        var query = querys['CURP'];
+                        query = query.replace('replace_id', idbeneficiario);
+                        //alert('el query:'+query);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : segundaConsulta,
+                            onFailure : failure
+                        });
+                    }
+
+                    function segundaConsulta(result) {
+                        var resultado = result.getArray("records");
+
+                        curp = resultado[0]['CURP__c'];
+                        console.log("Trae el CURP ="+curp);//alert('el curp:'+curp);
+                        var consulta = sforce.connection.query(querys['idReferencia'], {
+                            onSuccess : terceraConsulta,
+                            onFailure : failure
+                        });
+                    }
+
+                    function terceraConsulta(result) {
+                        var resultado = result.getArray("records");
+                        idreferencia = resultado[0]['Id'];
+                        var query = querys['BeneficiariosCURP'];
+                        query = query.replace('replace_curp', curp);
+                        query = query.replace('replace_id', idbeneficiario);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : cuartaConsulta,
+                            onFailure : failure,
+                        });
+                    }
+
+                    function cuartaConsulta(result) {
+                        beneficiarios = result.getArray("records");
+                        var query = querys['Referencias'];
+                        query = query.replace('replace_id', idreferencia);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : quintaConsulta,
+                            onFailure : failure,
+                            source    : state
+                        });
+                    }
+
+                    function quintaConsulta(result, source) {
+                        referencias = result.getArray("records");
+                        source.beneficiarios.innerHTML = muestraBeneficiarios(beneficiarios);
+                        //source.referencias.innerHTML = muestraReferencias(referencias);
+                        $('textarea').each(function(){
+                            autosize(this);
+                        });
+                    }
+                    
+                    function muestraBeneficiarios(beneficiaries) {
+                        var tabla = '';
+                        var orden =null;
+                        if (beneficiaries.length > 0) {
+                            tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 12px;">';
+                            tabla += '<thead>';
+                            tabla += '<tr class="slds-text-title_caps" style="font-size: 10px;background: white;">';
+                            tabla += '<th scope="col">';
+                            tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_008}';
+                            tabla += '</th>';
+                            // if(beneficiaries.length > 1){
+                            // tabla += '<th scope="col">';
+                            // tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_014}';
+                            // tabla += '</th>';
+                            // }
+                            tabla += '</thead>';
+                            tabla += '<tbody>';
+                            for (var i = 0; i < beneficiaries.length; i++) {
+                                var data = beneficiaries[i];
+                                if(i==0){
+                                orden=0;
+                                }
+                                if(i==0){
+                                tabla += '<tr>';
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+
+                                tabla += '</td>';
+                                orden=1;
+
+                                }
+                                else if(beneficiaries[1].isUpdateData__c=='true' && i==1) {
+
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                orden=0;
+                                } else if (beneficiaries[1].isUpdateData__c=='false' && i==1){
+                                    if (beneficiaries[i].isUpdateData__c=='true' && i>1){
+                                     tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                        }
+
+                                    }
+                                else if(beneficiaries[i].isUpdateData__c=='true' && i>1) {
+                                    if (beneficiaries[i-1].isUpdateData__c=='false'){
+                                        tabla += '<td>';
+                                        tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                        tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                        tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                    if ( data.Bank__c != null ) {
+                                      tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                    }
+                                    if( data.Bank_Account__c != null) {
+                                      tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                    }
+                                    if( data.CLABE__c != null ) {
+                                      tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                    }
+                                    tabla += '</td>';
+                                        tabla += '</tr>';
+                                        tabla += '</td>';
+                                        tabla += '</tr>';
+                                        }else {
+                                tabla += '<tr>';
+                                tabla += '<td>';
+                                tabla += '<div><span>'+'</span> </div>';
+                                tabla += '<div> <span>'+'</span></div>';
+                                tabla += '<div> <span>'+'</span></div>';
+                                tabla += '</td>';
+
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                orden=0;
+                                }
+                                }
+                            }
+                            tabla += '</tbody>';
+                            tabla += '</table>';
+                        }
+                        return tabla;
+                    }
+                    function failure(error) {
+                        console.log("An error has occurred " + error);
+                    }
+                }
+                function TestOpenSubtab(id, tipo) {
+                    id_tab = id;
+                    tab_name = tipo;
+                    sforce.console.getEnclosingPrimaryTabId(openSubtab);
+                }
+
+                /**
+                * Función abrir el subtabulador
+                *
+                * @param String result Identificador del tabulador
+                *
+                * @return void
+                */
+                var openSubtab = function openSubtab(result) {
+                    var primaryTabId = result.id;
+                    sforce.console.openSubtab(primaryTabId , '/'+id_tab, true, tab_name, null);
+                };
+            </script>
+            <script type="text/javascript">
+                
+                jQuery.noConflict();
+                jQuery(document).ready(function() {
+                    setupPage();
+                });
+            </script>
+        </head>
+        <body class="slds-scope" style="width:100%;">
+            <apex:form >
+                <!-- Datos Actuales  -->
+                <div style="float:left; width: 50%">                    
+                    <div class="slds-size_2-of-2"><span style="color:black; font-size:12px" class="slds-align_absolute-center">{!$Label.AAZ_DataModify_001}</span>
+                    </div>
+                    <div class="slds-box" style="background-color:white; margin-left:5px; margin-right:5px;">
+                        <apex:repeat value="{!FieldSetFieldsAcc}" var="fieldAcc">
+                            <tr>
+                                <td style="text-align: center;">
+                                    <div class="slds-form-element" style="font-size: 12px; color: blue;">
+                                        <label class="slds-form-element__label">{!fieldAcc.label}</label>
+                                        <apex:outputField style="font-weight: bold;" value="{!accountInstance[fieldAcc]}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </div>
+                </div>
+                <!-- Datos Nuevos  -->
+                <div style="float:left; width: 50%">
+                    <div class="slds-size_2-of-2"><span style="color:black; font-size:12px" class="slds-align_absolute-center">{!$Label.AAZ_DataModify_002}</span>
+                    </div>
+                    <div class="slds-box" style="background-color:white; margin-left:5px; margin-right:5px;">
+                        <apex:repeat value="{!FieldSetFieldsCase}" var="field">
+                            <tr>
+                                <td style="text-align: center;">
+                                    <div class="slds-form-element" style="font-size: 12px; color: red;">
+                                        <label class="slds-form-element__label">{!field.label}</label>
+                                        <apex:outputField style="font-weight: bold;" value="{!caseInstance[field]}"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </div>
+                </div>
+                <!-- Beneficiarios -->
+                <div id="beneficiarios"></div><br/>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

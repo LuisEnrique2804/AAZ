@@ -1,0 +1,30 @@
+<!--***Revisión René  "Eliminar visualforce" ****-->
+
+<apex:page showHeader="false" sidebar="false" standardController="Case">
+    <apex:slds />
+     <apex:includeScript value="/support/console/40.0/integration.js"/>
+    <script src="../../soap/ajax/40.0/connection.js" type="text/javascript"></script>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/moment.js') }"/>
+    <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/autosize.min.js') }"/>
+    <apex:includeScript value="{! $Resource.TablaSLDS }"/>
+    <script type="text/javascript">
+      var session_id = sforce.connection.sessionId='{!GETSESSIONID()}';
+      var div_id = 'output';
+      var headers = {'Name__c':'Nombre', 'FatherLastName__c':'A Paterno', 'MaternalLastName__c':'A Materno','Phone__c':'Teléfono'};
+      var style_header = 'font-size: 7px;background: blue;color: white;';
+      var th_header = {};
+      var type_field = {'Name__c':'subtab'};
+      var query = {"id" : "SELECT Id FROM RecordType WHERE SobjectType='People__c' AND DeveloperName='Reference'",
+          "query": "SELECT Id, Name__c, FatherLastName__c, MaternalLastName__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id' AND ParentIdReference__c='{! Case.Id}'"};
+      var msg_not_found = 'No se encontraron referencias relacionados al cliente';
+      var custom_table = 'default';
+      var tab_name = 'Referencia';
+      window.onload = setupPage;
+    </script>
+
+    <div class="slds-scope" style="font-size: 9px;">
+        <div id="output"> </div>
+    </div>
+
+</apex:page>

@@ -1,0 +1,17 @@
+{
+    "projectName": "AAZ",
+    "username": "consultortecnico2afore@avanxo.com.developer",
+    "id": "080f2e90-1f44-11e8-8c61-6175a495df6a",
+    "namespace": "",
+    "orgType": "developer",
+    "loginUrl": "https://login.salesforce.com/",
+    "instanceUrl": "https://aforeneworg-2017--Developer.cs17.my.salesforce.com",
+    "workspace": "C:\\Users\\ToshAvanxo\\Documents\\Workspace\\AZZ",
+    "subscription": [
+        "ApexClass",
+        "ApexComponent",
+        "ApexPage",
+        "ApexTrigger",
+        "StaticResource"
+    ]
+}

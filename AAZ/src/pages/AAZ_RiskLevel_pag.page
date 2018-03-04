@@ -1,0 +1,94 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria 
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo la visualizacón de una 
+    tabla que contiene la informacón del nivel de riesgo que puede llegar a presentar el 
+    tramite en cuestion (Caso), el trabajador (Account) y el agente promotor (Contact).
+     
+    Cambios (Versiones)     
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción     
+    *****   *************  *****************************    *********************************   
+     0.1     04-08-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     04-08-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     09-08-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+*********************************************************************************************/-->
+
+<apex:page showHeader="false" sidebar="false" standardController="Case" extensions="AAZ_RiskLevel_ctr">
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+            <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <apex:includeScript value="/support/console/38.0/integration.js" />
+            <apex:slds />
+            
+		</head>
+		<body>
+            <table class="slds-table slds-table--bordered slds-table--cell-buffer" style="width: 100%; table-layout: fixed; font-family: Arial, Helvetica, sans-serif; font-size:12px; display:{!IF(AND(lstContactFields.size <> 0, lstContactFields.size <> 0),'table','none')};">
+                <thead>
+                    <tr style="background-color:#af272f;">
+                        <td style="color:#fff; text-align:center; width: 200px">
+                            {!$Label.AAZ_RiskLevel_002}
+                        </td>
+                    	<td style="color:#fff; text-align:center;">
+                            {!$Label.AAZ_RiskLevel_003}
+                        </td>
+                        <td style="color:#fff; text-align:center;">
+                            Máximo
+                        </td>
+                    </tr>   
+                </thead>
+                <tbody>
+                    <apex:variable value="{!0}" var="i"/>
+                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.RiskLevelAcc}" var="field">
+                        <tr class="slds-page-header">
+                            <td class="slds-truncate" style="text-align:center; color:black;  background-color:white;">
+                                {!field.label}
+                            </td>
+                            <td class="slds-truncate" style="font-weight: bold; text-align:center; color:black;  background-color:white;">
+                                <apex:outputField value="{!pwRiskLevel.objAccPoints[field]}"/>
+                            </td>
+                            <td class="slds-truncate" style="font-weight: bold; text-align:center; color:black;  background-color:white;">
+                                <apex:variable value="{!lstAccountFields[i]}" var="aM"/>
+                                <apex:outputField value="{!pwRiskLevel.objAccPoints[aM]}"/>
+                            </td>
+                        </tr>
+                        <!-- <apex:outputPanel rendered="{!lstContactFields.size > i}">
+                            <tr class="slds-page-header">
+                                <td class="slds-truncate" style="text-align:center; color:#black;  background-color:white;">
+                                    {!lstContactFields[i].label}
+                                </td>
+                                <td class="slds-truncate" style="font-weight: bold; text-align:center; color:#black;  background-color:white;">
+                                    <apex:variable value="{!lstContactFields[i]}" var="d"/>
+                                    <apex:outputField value="{!pwRiskLevel.objContPoints[d]}"/>
+                                </td>
+                                <td class="slds-truncate" style="font-weight: bold; text-align:center; color:#black;  background-color:white;">
+                                    <apex:variable value="{!lstContactFieldsM[i]}" var="dM"/>
+                                    <apex:outputField value="{!pwRiskLevel.objContPoints[dM]}"/>
+                                </td>
+                            </tr>
+                        </apex:outputPanel> -->
+                        <apex:outputPanel rendered="{!lstCaseFields.size > i}">
+                            <tr class="slds-page-header">
+                                <td class="slds-truncate" style="text-align:center; color:#black;  background-color:white;">
+                                    {!lstCaseFields[i].label}
+                                </td>
+                                <td class="slds-truncate" style="font-weight: bold; text-align:center; color:#black;  background-color:white;">
+                                    <apex:variable value="{!lstCaseFields[i]}" var="f"/>
+                                    <apex:outputField value="{!pwRiskLevel.objCasePoints[f]}"/>
+                                </td>
+                                <td class="slds-truncate" style=" font-weight: bold; text-align:center; color:#black;  background-color:white;">
+                                    <apex:variable value="{!lstCaseFieldsM[i]}" var="fm"/>
+                                    <apex:outputField value="{!pwRiskLevel.objCasePoints[fm]}"/>
+                                </td>
+                            </tr>
+                        </apex:outputPanel>
+                        <apex:variable value="{!i+1}" var="i"/>
+                    </apex:repeat>
+                </tbody>
+            </table>
+		</body>
+	</html>
+</apex:page>

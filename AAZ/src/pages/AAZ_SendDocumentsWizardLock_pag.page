@@ -1,0 +1,196 @@
+<apex:page showHeader="false" sidebar="false" extensions="AAZ_SendDocumentsWizardBlkHst_ctr" standardController="BlockHistory__c">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <meta chaset="utf-8" />
+            <apex:slds />
+            <script type="text/javascript">
+
+                window.onload = showHideRows;
+                
+                function showHideRows(){
+                    var picklistElement = document.getElementById('{!$Component.MainForm.SelectModePL}');
+                    var selectedValue = picklistElement.options[picklistElement.selectedIndex].value;
+                    var joiningTrArray = document.getElementsByClassName('ChoseJoiningTr');
+                    var documentTrArray = document.getElementsByClassName('ChoseDocumentTr');
+                    var documentNameTrArray = document.getElementsByClassName('ChoseDocumentNameTr');
+                    var inputFileTrArray = document.getElementsByClassName('InputFileTr');
+                    var blnShowJoiningTr = false;
+                    var blnShowDocumentTr = false;
+                    var blnShowDocNameTr = false;
+                    var blnShowInputFileTr = false;
+                    if(selectedValue == 'Alta'){    
+                        blnShowJoiningTr = true;
+                        blnShowDocNameTr = true;
+                        blnShowInputFileTr = true;
+                    }else if(selectedValue == 'Reemplazo'){
+                        blnShowJoiningTr = true;
+                        blnShowDocumentTr = true;
+                        blnShowDocNameTr = true;
+                        blnShowInputFileTr = true;
+                    }else if(selectedValue == 'Baja'){
+                        blnShowDocumentTr = true;
+                    }
+                    for(var i=0; i<joiningTrArray.length; i++){
+                        if(blnShowJoiningTr){
+                            joiningTrArray[i].style.display = 'table-row';
+                        }else{
+                            joiningTrArray[i].style.display = 'none';
+                        }
+                    }
+                    for(var i=0; i<documentTrArray.length; i++){
+                        if(blnShowDocumentTr){
+                            documentTrArray[i].style.display = 'table-row';
+                        }else{
+                            documentTrArray[i].style.display = 'none';
+                        }
+                    }
+                    for(var i=0; i<documentNameTrArray.length; i++){
+                        if(blnShowDocNameTr){
+                            documentNameTrArray[i].style.display = 'table-row';
+                        }else{
+                            documentNameTrArray[i].style.display = 'none';
+                        }
+                    }
+                    for(var i=0; i<inputFileTrArray.length; i++){
+                        if(blnShowInputFileTr){
+                            inputFileTrArray[i].style.display = 'table-row';
+                        }else{
+                            inputFileTrArray[i].style.display = 'none';
+                        }
+                    }
+                }
+
+            </script>
+        </head>
+        <body class="slds-scope" style="width:100%; text-align:center; background-color:white;">
+            <apex:actionStatus id="processing">
+              <apex:facet name="start">
+                  <div class="slds-spinner_container slds-is-fixed">
+                      <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                          <span class="slds-assistive-text">Processing</span>
+                          <div class="slds-spinner__dot-a"></div>
+                          <div class="slds-spinner__dot-b"></div>
+                      </div>
+                  </div>
+              </apex:facet>
+            </apex:actionStatus>
+            <apex:form id="MainForm">
+                <apex:outputPanel id="msgsOP">
+                    <apex:outputPanel rendered="{!lstErrorMsgs.size <> 0}">
+                        <div class="BAZ">
+                            <div class="slds-notify_container" style="position:relative;">
+                                <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+                                    <span class="slds-assistive-text">Error</span>
+                                    <h2>
+                                        <ul>
+                                            <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+                                                <li>
+                                                    {!strMsg}
+                                                </li>
+                                            </apex:repeat>
+                                        </ul>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="OPResults" rendered="{!lstSuccessMsgs.size <> 0}">
+                        <div class="slds-notify_container" style="position:relative;">
+                            <div class="slds-notify slds-notify--alert slds-theme--alert-texture" role="alert">
+                                <span class="slds-assistive-text">Info</span>
+                                <ul>
+                                    <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+                                        <li>
+                                            {!strMsg}
+                                        </li>
+                                    </apex:repeat>
+                                </ul>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div class="slds-box" style="width:80%; margin: 0 auto;">
+                       <br/>
+                       <table style="width:400px; margin:0 auto;">
+                            <tr>
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        Acción
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:selectList Id="SelectModePL" styleClass="slds-select" value="{!strMode}" size="1" onchange="showHideRows();">
+                                        <apex:selectOptions value="{!ModeOptions}" />
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr class="ChoseJoiningTr">
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        Afiliación
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:inputField value="{!bHistoryInstance.Tramite__c}"/>
+                                </td>
+                            </tr>
+                            <tr class="ChoseJoiningTr">
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr class="ChoseDocumentTr">
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        Documento
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:inputField value="{!bHistoryInstance.ChoosenAPDocument__c}"/>
+                                </td>
+                            </tr>
+                            <tr class="ChoseDocumentTr">
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr class="ChoseDocumentNameTr">
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        {!$Label.AAZ_NewAPDocument_004}
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:inputField value="{!docAPInstance.DocName__c}" styleClass="slds-input" />
+                                </td>
+                            </tr>
+                            <tr class="ChoseDocumentNameTr">
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr class="InputFileTr">
+                                <td style="text-align:center;" colspan="2">
+                                    <apex:inputFile value="{!attchmntInstance.Body}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <br/>
+                        <div class="slds-button-group" role="group" style="width:100px; margin:0 auto;">
+                            <apex:commandButton styleClass="slds-button slds-button_neutral" value="Limpiar" action="{!initiateVars}" status="processing"/>
+                            <apex:commandButton styleClass="slds-button slds-button_brand" value="Ejecutar" action="{!executeOperation}" status="processing"/>
+                        </div>
+                    </div>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

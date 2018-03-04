@@ -1,0 +1,1175 @@
+<!--Observaciones René "Agregar encabezado"-->
+<!--Observaciones René "Agregar etiquetas y mensajes de usuario como etiquetas personalizadas"-->
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo
+Autor: Rene Ayala
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar los documentos asociados al trámite
+Se cargan mediante URL's.
+Se puede navegar entre los trámites mediante un combobox o mediante los botones anterior o siguiente
+Cada uno de los trámites(imagenes) cuenta con los botones para interactuar con ellos, es decir
+alejarlos, acercarlos o rotarlos.
+Estas opciones tambien pueden ser realizadas con el ratón: con un click y dejandolo apretado se puede
+arrastrar la imagen, doble click acerca la imagén, click derecho del ratón rota la imagen y dejando
+apretado el botón derecho del mouse por dos segundos reinicia la imágen a su tamaño original.
+Cada una de los trámites(imágenes) tiene un icono para poder ingresar sus motivos de rechazo los cuales
+aparecen mediante un combobox los cuales al ser elegidos se guardan en el objeto ReasonRejection.
+Hay tres botones con iconos los cuales son para descargar el audio, el video y todos los documentos
+relacionados con el trámite.
+Existen cuatro botones los cuales son:
+Pendiente: Abre un modal donde se ingresa un comentario y se cambia el status a Pendiente
+Revertir: Abre un modal donde se ingrea un comentario y se cambia el status a Revertido
+Aceptar: Ejecuta el validador biométrico
+Rechazar: Abre un modal donde se seleccionan los rechazos por trámite y los comentarios
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Samuel Galindo         Creación
+0.2     13-07-2017    Samuel Galindo         Construcción
+0.9     03-08-2017    Samuel Galindo         Construcción
+1.0     09-08-2017    Rene Ayala             Script Validador Biométrico
+1.0     10-08-2017    Samuel Galindo         Finalización y documentación
+1.2     11-08-2017    Samuel Galindo         Ajustes
+1.3     15-10-2017    Daniel Peñaloza        Ajustes
+*******************************************************************************-->
+
+<apex:page standardController="Case" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" extensions="AAZ_DocumentValidate_ctr">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-uaonke-compatible" content="ie=edge" />
+            <title>{! Case.CaseNumber }</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <apex:includeLightning />
+            <apex:includeScript value="{!$Resource.SLDSDynamicLookupScript}"/>
+            <apex:includeScript value="{!URLFOR($Resource.JSZIP)}"/>
+            <apex:includeScript value="/support/console/41.0/integration.js"/>
+            <apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/panzoom.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQueryRotateCompressed.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jqueryeasingmin.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/longclick.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/manipulacionimagen.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.TiffHandlerJS)}"/>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+            <apex:slds />
+            <style>
+                .select2-results{
+                  font-size:12px;
+                  color: #54698d;
+                  font-family: "Salesforce Sans",Arial,sans-serif;
+                }
+                .select2-selection{
+                  font-size:12px;
+                  color: #54698d;
+                  font-family: "Salesforce Sans",Arial,sans-serif;
+                }
+            </style>
+            <script type="text/javascript">
+                    sforce.console.getFocusedPrimaryTabId(function(result) {
+                        console.log('Carlos: '+ {! Case.FolioNSS__c });
+                        setTimeout(sforce.console.setTabTitle({! Case.FolioNSS__c }, result.id), 15000);
+                        console.log('Lucho:  '+{! Case.FolioNSS__c });
+                    });
+            </script>
+        </head>
+        <body>
+
+            <apex:outputPanel id="main" rendered="{!NOT(blnIsComplainRecord)}">
+                <div class="slds-scope">
+                    <apex:outputPanel id="thePanel">
+                        <script type="text/javascript"> 
+
+                            function archivoJs(urlLink){
+
+                                var link = document.createElement("a");
+                                var nombre=urlLink.split("/");
+                                console.log(nombre.length);
+                                console.log(nombre[nombre.length-1]);
+                                link.download = nombre[nombre.length-1];
+                                link.target = "_blank";
+
+                                // Construct the uri
+                                link.href = urlLink;
+                                document.body.appendChild(link);
+                                link.click();
+
+                                // Cleanup the DOM
+                                document.body.removeChild(link);
+                                delete link;
+                            }
+
+                            //Método para armar y descargar el archivo zip
+                            function getBase64Files() {
+                                var urls = '{!lstDocumentsComplete}';
+                                var url2 = urls.split(',');
+                                console.log(urls);
+                                console.log('urls: ' + url2.length);
+                                for (var i = 0; i < url2.length; i++) {
+                                    console.log('i: '+url2[i]);
+                                    setTimeout(archivoJs(url2[i]),5000);
+                                }
+                            }
+                        </script>
+                    </apex:outputPanel>
+
+                    <apex:form id="formdocument">
+                        <apex:actionFunction name="documentSelectionChange" action="{! documentSelectionChange }" />
+
+                        <script type="text/javascript">
+                            jQuery.noConflict();
+                            jQuery(document).ready(function() {
+                                iniciaZoom('document');
+                                ratonZoom('document', 'documentclass');
+
+                                if('{!strComment}'!=''){
+                                    $('#comentsRejections').show();
+                                }
+
+                                jQuery('.selectpicker').select2(
+                                    { width: '100%' }
+                                );
+
+                                $('.selectpicker').next('.select2').mouseenter(function() {
+                                        jQuery('.selectpicker').select2('open');
+                                });
+
+                                $(document).on('mouseleave', '.select2-container', function(e) {
+                                    if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                                        jQuery('.selectpicker').select2('close');
+                                    }
+                                });
+
+                                jQuery('.selectpicker').change(function(){
+                                    executeRejectionDocs();
+                                });
+
+                            });
+                        </script>
+
+
+
+                        <apex:pageBlock rendered="{! IF(intLabelTotal>0, true, false)}">
+
+                            <apex:actionFunction reRender="formdocument" name="imageupdate" action="{!imageUpdate}" />
+                            <apex:actionFunction reRender="thePanel" name="downloadAllFiles" action="{!getFilesToZip}" oncomplete="getBase64Files()" status="processing"/>
+                            <apex:actionFunction reRender="successrejection,modalRejection,revertbuttoms" name="executeAllRejections" action="{!saveAllRejections}" status="processing" oncomplete="startRefreshProcess();"/>
+                            <apex:actionFunction name="rejectStatus" action="{!changeStatus}" oncomplete="{!IF(
+                                blnApprovalOrRejectionWasCommited,
+                                'setTimeout(closeTab,2000)',
+                                'hola();'
+                            )}" reRender="msgsOP"/>
+                            <!-- oncomplete="{!IF(
+                                blnApprovalOrRejectionWasCommited,
+                                'setTimeout(closeTab,2000)',
+                                ''oncomplete="setTimeout(startRefreshProcess(),10000);"
+                            )}" -->
+                            <apex:actionFunction reRender="thePanel" name="executeRejection" action="{!saveRejections}" status="processing" />
+                            <apex:actionFunction reRender="thePanel" name="executeRejectionDocs" action="{!saveRejectionsDocs}" status="processing"/>
+                            <apex:actionFunction reRender="successrejection,revertbuttoms" name="saveCommentPending" action="{!savePending}" status="processing" oncomplete="{!IF(
+                                blnApprovalOrRejectionWasCommited,
+                                'setTimeout(closeTab,5000)',
+                                ''
+                            )}"/>
+                            <apex:actionFunction reRender="successrejection,revertbuttoms" name="saveRevert" action="{! saveRevert }" status="processing"/>
+                            <apex:actionFunction reRender="main,successrejection,revertbuttoms" name="backProcedure" action="{!backProcedure}"  status="processing" oncomplete="{!IF(blnApprovalOrRejectionWasCommited, 'setTimeout(closeTab,2000)', '')}">
+                                <apex:param id="strUserId" name="strUserId" value="" />
+                            </apex:actionFunction>
+                            <!--<apex:actionFunction reRender="successrejection,revertbuttoms" name="executeSaveAceptComent" action="{!saveAccept}" status="processing" oncomplete="{!IF(
+                                blnApprovalOrRejectionWasCommited,
+                                'setTimeout(closeTab,2000)',
+                                ''
+                            )}"/>-->
+                            <script type="text/javascript">
+                                function changeOwnwer(){
+                                    window.location.href = '{! URLFOR($Action.Case.Edit, Case.Id) }';
+                                }
+                            </script>
+                            <!--Inicio de bloque de validación biométrica-->
+
+                            <apex:actionFunction name="setListeningMode" action="{!setListeningMode}" status="processing" reRender="msgsOP, biometricalScriptOP" oncomplete="{!IF(blnBiometricalComponentHasBeenSuccessfullyCalled,'openBiometricalComponent(); setTimeout(getComponentStatus,3000);','')}"/>
+                            <apex:actionFunction name="getComponentStatus" action="{!getComponentStatusQuery}" oncomplete="{!IF(
+                                blnApprovalOrRejectionWasCommited,
+                                'setTimeout(closeTab,2000)',
+                                ''
+                            )}"
+                            status="processing" reRender="msgsOP"/>
+                            <br/>
+                            <br/>
+                            <apex:outputPanel id="msgsOP" layout="none">
+                                <apex:outputPanel rendered="{!lstErrorMsgs.size <> 0}" layout="block">
+                                    <div class="BAZ">
+                                        <div class="slds-notify_container" style="position:relative; width: 100%;">
+                                            <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture slds-m-top--large" role="alert">
+                                                <span class="slds-assistive-text">Error</span>
+                                                <h2>
+                                                    <ul>
+                                                        <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+                                                            <li>
+                                                                {!strMsg}
+                                                            </li>
+                                                        </apex:repeat>
+                                                    </ul>
+                                                </h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                                <apex:outputPanel id="OPResults" rendered="{!lstSuccessMsgs.size <> 0}">
+                                    <div class="slds-notify_container" style="position:relative; width: 100%;">
+                                        <div class="slds-notify slds-notify--alert slds-theme--alert-texture" role="alert">
+                                            <span class="slds-assistive-text">Info</span>
+                                            <ul>
+                                                <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+                                                    <li>
+                                                        {!strMsg}
+                                                    </li>
+                                                </apex:repeat>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+
+                            <apex:outputPanel id="biometricalScriptOP">
+                                <script type="text/javascript">
+
+                                    var varNSS = '{!caseInstance.Account.NSS__c}';
+                                    var varFolio = '{!caseInstance.FolioNSS__c}';
+                                    var varEmployeeNumber = '{!currentUserInstance.EmployeeNumber}';
+                                    var varFingersCode = '{!strFingerPrintsCode}';
+
+                                    function openBiometricalComponent(){
+                                        var win = window.open("component:// folio:"+varFolio+"|nss:"+varNSS+"|nombreComponente:VALID_MESA|aplicacion:MC|Dedo:"+varFingersCode+"|Empleado:"+varEmployeeNumber+"|A:", 'Abriendo Biométrico', 'width=1,height=1,left=5,top=3');
+                                        setTimeout(function() { win.close(); }, 10000);
+                                        console.log("component://folio:"+varFolio+"|nss:"+varNSS+"|nombreComponente:VALID_MESA|aplicacion:MC|Dedo:"+varFingersCode+"|Empleado:"+varEmployeeNumber+"|A:");
+                                    }
+
+                                </script>
+                            </apex:outputPanel>
+
+                            <!-- Final de bloque de validación biométrica -->
+
+                            <div class="slds-grid">
+                              <div class="slds-col optionsprocedure">
+                                    <div id="selectprocedure" style="display:none;" class="selectprocedure">
+                                        <apex:outputPanel id="modalRejection">
+
+                                            <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" rendered="{!IF(strStatusRejections=='error', true, false)}">
+                                                <h2> {!$Label.AAZ_DocumentValidate_005}</h2>
+                                            </apex:outputPanel>
+
+                                            <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" rendered="{!IF(strStatusRejections=='errorcomen', true, false)}">
+                                                <h2> {!$Label.AAZ_DocumentValidate_006}</h2>
+                                            </apex:outputPanel>
+
+                                        </apex:outputPanel>
+                                        <br/><br/>
+                                        <apex:selectList value="{!strOptionProcedure}" multiselect="true" styleClass="slds-select selectpicker2" style="font-size:12px;">
+                                            <apex:selectOptions value="{!lstRejectionsProcedure}"/>
+                                        </apex:selectList><br/><br/>
+
+                                        <div style="display:none;" id="comentsRejections">
+                                          <apex:outputLabel value="{!$Label.AAZ_DocumentValidate_001}" for="theComents" style="font-size:12px;"/>
+                                          <apex:inputTextarea id="comentsprocedure" value="{!strComment}" styleClass="slds-textarea"/>
+                                        </div>
+
+                                    </div>
+                                    <!-- <apex:selectList id="listOptions" value="{!intOptionSelect}" multiselect="false" size="1" styleClass="slds-select" onchange="imageupdate();" style="font-size:12px;">
+                                        <apex:selectOptions value="{!lstDocumentOptions}"/>
+                                    </apex:selectList> -->
+                                    <p/>
+                                    <!-- <apex:inputHidden value="{!strCaseId}" id="HiddenField"/> -->
+                                    <apex:inputHidden value="{!strDigitalizationFile}" id="HiddenField1"/>
+                                    <apex:inputHidden value="{!lstRejectionsProcedureSelect}" id="HiddenField2"/>
+                                    <apex:inputHidden value="{!strComment}" id="HiddenField3"/>
+                                    <apex:inputHidden value="{!strPendingComment}" id="HiddenField4"/>
+                                    <apex:inputHidden value="{!strRevertComment}" id="HiddenField5"/>
+                                    <apex:inputHidden value="{!strIDUser}" id="HiddenField6"/>
+                                    <!--<apex:inputHidden value="{!strAceptComment}" id="HiddenField6"/>-->
+
+                                </div>
+
+                                <!-- Barra de herramientas -->
+                                <div class="slds-p-top_xx-small slds-p-right_xx-small slds-p-bottom_xx-small" style="display: block; position: fixed; overflow: hidden; top: 0; left: 0; right: 0; width: 100%; z-index: 1000; background-color: rgba(255, 255, 255, 0.8);">
+                                    <div class="slds-grid slds-grid_align-spread slds-p-left_x-small">
+                                        <!-- Selección de Documento -->
+                                        <div>
+                                            <div class="slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container">
+                                                        <apex:selectList value="{! selectedDocument }" multiselect="false" styleClass="slds-select" size="1" style="display: inline-block;" onchange="documentSelectionChange();">
+                                                            <apex:selectOptions value="{! lstDocumentSelection }" />
+                                                        </apex:selectList>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Paginación -->
+                                        <div class="slds-button-group" role="group">
+                                            <apex:commandButton title="Documento Anterior" value="<<" id="previous-doc" action="{! goToPreviousDocument }" styleClass="slds-button slds-button_neutral" disabled="{! currentDocumentIndex == 0 }" status="processing" />
+                                            <apex:commandButton title="Página Anterior" value="<" id="anterior" action="{! goToPreviousPage }" styleClass="slds-button slds-button_neutral" disabled="{! AND(currentDocument != null, currentDocument.page__c <= 1) }" />
+                                            <span class="slds-button slds-button_neutral">{! currentDocument.page__c }</span>
+                                            <apex:commandButton title="Página Siguiente" value=">" id="siguiente" action="{! goToNextPage }" styleClass="slds-button slds-button_neutral"  disabled="{! AND(currentDocument != null, currentDocument.page__c >= lstDocumentPages.size) }" />
+                                            <apex:commandButton title="Documento Siguiente" value=">>" id="next-doc" action="{! goToNextDocument }" styleClass="slds-button slds-button_neutral" disabled="{! currentDocumentIndex == (lstOrderedDocIds.size - 1) }" status="processing" />
+                                        </div>
+
+                                        <!-- Descargas -->
+                                        <div id="revertbuttoms" class="slds-button-group" role="group">
+                                            <apex:outputPanel rendered="{! OR(strSoundLink == null, strSoundLink == '') }" layout="none">
+                                                <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" disabled="disabled" title="{!$Label.AAZ_DocumentValidate_020}">
+                                                    <span class="slds-text-not-selected">
+                                                        <svg class="slds-button__icon" aria-hidden="true">
+                                                            <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#volume_high')}" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{! AND(strSoundLink != null, strSoundLink != '') }" layout="none">
+                                                <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="window.open('{! strSoundLink }', '_blank')" title="{!$Label.AAZ_DocumentValidate_020}">
+                                                    <span class="slds-text-not-selected">
+                                                        <svg class="slds-button__icon" aria-hidden="true">
+                                                            <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#volume_high')}" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </apex:outputPanel>
+
+                                            <apex:outputPanel rendered="{! OR(strVideoLink == null, strVideoLink == '') }" layout="none">
+                                                <button type="button" class="{! IF(caseDevName!=strAPRegisterType, 'slds-button slds-button_icon slds-button_icon-border-filled', 'slds-hide')}" aria-live="assertive" disabled="disabled" title="{!$Label.AAZ_DocumentValidate_021}">
+                                                    <span class="slds-text-not-selected">
+                                                        <svg class="slds-button__icon" aria-hidden="true">
+                                                            <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#video')}" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{! AND(strVideoLink != null, strVideoLink != '') }" layout="none">
+                                                <button type="button" class="{! IF(caseDevName!=strAPRegisterType, 'slds-button slds-button_icon slds-button_icon-border-filled', 'slds-hide')}" aria-live="assertive" onclick="window.open('{! strVideoLink }', '_blank')" title="{!$Label.AAZ_DocumentValidate_021}">
+                                                    <span class="slds-text-not-selected">
+                                                        <svg class="slds-button__icon" aria-hidden="true">
+                                                            <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#video')}" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </apex:outputPanel>
+
+                                            <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="downloadAllFiles();" title="{!$Label.AAZ_DocumentValidate_022}">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Botones de Cambio de Estatus -->
+                                        <div class="slds-button-group">
+                                            <button type="button" class="{! IF(OR(Case.Status == 'EN VALIDACION', Case.Status == 'REVERTIDO'), 'slds-button slds-button_neutral', 'slds-hide') }" onclick="displayModal('pendingModal');" style="height: 32px; width: 90px;">{!$Label.AAZ_DocumentValidate_007}</button>
+                                            <button type="button" class="{! IF(AND(Case.Status == 'RECHAZADO',Case.IsPosibleReverse__c), 'slds-button slds-button_neutral', 'slds-hide') }" onclick="displayModal('revertModal');" style="height: 32px; width: 90px;">{! $Label.AAZ_DocumentValidate_008 }</button>
+                                            <button type="button" class="{! IF(AND(Case.Status == 'EN VALIDACION',Case.RecordType.DeveloperName == 'AgentPromotionVerification'), 'slds-button slds-button_neutral', 'slds-hide') }" onclick="displayModal('acceptModal');" style="height: 32px; width: 90px;">{!$Label.AAZ_DocumentValidate_009}</button>
+                                            <apex:commandButton style="height: 32px; width: 90px;" value="{!$Label.AAZ_DocumentValidate_009}" styleClass="slds-button slds-button_neutral" action="{! approveProcedureFirstStep }" rendered="{! AND(Case.RecordType.DeveloperName <> 'AgentPromotionVerification', OR(Case.Status == 'EN VALIDACION', Case.Status == 'REVERTIDO')) }" reRender="msgsOP" status="processing" oncomplete="{!IF(
+                                                blnRunBiometricalProcess,
+                                                'setListeningMode();',
+                                                IF(
+                                                    blnApprovalOrRejectionWasCommited,
+                                                    'setTimeout(closeTab,2000)',
+                                                    ''
+                                                )
+                                            )}"/>
+
+                                            <!-- <apex:commandButton StyleClass="{! IF(OR(Case.Status == 'EN VALIDACION', Case.Status == 'REVERTIDO'), 'slds-button slds-button_neutral', 'slds-hide') }" action="{!changeStatus}" status="processing" oncomplete="setTimeout(closeTab,2000)" value="Rechazar"/> -->
+
+                                            <apex:commandButton style="height: 32px; width: 90px;" StyleClass="{! IF(OR(Case.Status == 'EN VALIDACION', Case.Status == 'REVERTIDO'), 'slds-button slds-button_neutral', 'slds-hide') }" onclick="rejectStatus();" value="Rechazar" reRender="msgsOP"/>
+                                            <!-- Rechazos Generales -->
+                                            <apex:commandButton style="height: 32px; width: 146px;" value="{!$Label.AAZ_DocumentValidate_010}" styleClass="slds-button slds-button_neutral" onclick="rechazarModal();return false;" rendered="{!mapStatusBoolean['RECHAZADO']}"/>
+                                            <apex:commandButton style="height: 32px; width: 90px;" value="Devolver" styleClass="slds-button slds-button_neutral" onclick="devolverModal();return false;" rendered="{!mapStatusBoolean['DEVOLVER']}"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Zoom y Rotar -->
+                                <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: fixed; bottom: 16px; right: 16px; z-index: 1000;">
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled document-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled document-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="rotacion('documentclass');" title="Rotar">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <!-- <apex:outputPanel id="successrejection">
+                                <script type="text/javascript">
+                                    jQuery.noConflict();
+                                    jQuery(document).ready(function() {
+                                        if('{!strStatusRejections}' == 'exito' ||
+                                                '{!strStatusRejections}' == 'exitopending' ||
+                                                '{!strStatusRejections}' == 'exitorevert' ||
+                                                '{!strStatusRejections}' == 'exitoacept' ||
+                                                '{!strStatusRejections}' == 'erroracept' ||
+                                                '{!strStatusRejections}' == 'exitoBack'
+                                        ){
+                                            closeModal();
+                                        }
+                                    });
+                                </script>
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" rendered="{!IF(strStatusRejections=='erroracept', true, false)}">
+                                    <h1>{!$Label.AAZ_DocumentValidate_023}</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!IF(strStatusRejections=='exito', true, false)}">
+                                    <h1>{!$Label.AAZ_DocumentValidate_011}</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!IF(strStatusRejections=='exitopending', true, false)}">
+                                    <h1>{!$Label.AAZ_DocumentValidate_012}</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!IF(strStatusRejections=='exitorevert', true, false)}">
+                                    <h1>{!$Label.AAZ_DocumentValidate_013}</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!IF(strStatusRejections=='exitoacept', true, false)}">
+                                    <h1>{!$Label.AAZ_DocumentValidate_019}</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!IF(strStatusRejections=='exitoBack', true, false)}">
+                                    <h1>Se ha devuelto exitosamente</h1>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" rendered="{!IF(strStatusRejections=='error', true, false)}">
+                                    <h2> {!$Label.AAZ_DocumentValidate_005}</h2>
+                                </apex:outputPanel>
+
+                            </apex:outputPanel> -->
+
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_3-of-3">
+                                    <apex:pageBlock id="blockdocument">
+                                        <div id="document" class="slds-m-top_x-large">
+                                            <img src="{! currentDocument.FileURL__c }" class="documentclass" style="z-index: -1; width:100%"/>
+
+                                            <apex:actionStatus id="processing">
+                                                <apex:facet name="start">
+                                                    <div class="slds-spinner_container slds-is-fixed">
+                                                        <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                                            <span class="slds-assistive-text">Processing</span>
+                                                            <div class="slds-spinner__dot-a"></div>
+                                                            <div class="slds-spinner__dot-b"></div>
+                                                        </div>
+                                                    </div>
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                        </div>
+                                    </apex:pageBlock>
+                                </div>
+                            </div>
+                        </apex:pageBlock>
+
+                        <apex:pageBlock rendered="{! OR(ISNULL(lstOrderedDocIds), lstOrderedDocIds.size == 0) }">
+                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                                <h2>{!$Label.AAZ_DocumentValidate_015}</h2>
+                            </div>
+                        </apex:pageBlock>
+                    </apex:form>
+
+                    <div style="height: 640px; display:none" id="rejectionprocedure">
+                      <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                    <button type="button" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="closeModal();">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close') }" xmlns:xlink="http://www.w3.org/1999/xlink" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="rejectionprocedureheading" class="slds-text-heading_medium slds-hyphenate"></h2>
+                                </header>
+                          <div class="slds-modal__content slds-p-around_medium rejectionprocedurecontent" id="rejectionprocedurecontent">
+                          </div>
+                          <footer class="slds-modal__footer">
+                            <!-- <button class="slds-button slds-button_neutral" onclick="closeModal()">{!$Label.AAZ_DocumentValidate_016}</button> -->
+                            <button class="slds-button slds-button_brand" onclick="saveAllRejections()">{!$Label.AAZ_DocumentValidate_017}</button>
+                          </footer>
+                        </div>
+                      </section>
+                      <div class="slds-backdrop slds-backdrop_open" id="rejectionprocedurebackground" style="display:none;"></div>
+                    </div>
+
+                    <div style="height: 940px; display:none" id="genericmodal">
+                      <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+                        <div class="slds-modal__container">
+                          <header class="slds-modal__header">
+                            <h2 id="genericmodalheading" class="slds-text-heading_medium slds-hyphenate"></h2>
+                          </header>
+                                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert" style="display:none" id="pendingerrormsg">
+                                    <h2>{!$Label.AAZ_DocumentValidate_006}</h2>
+                                </div>
+                          <div class="slds-modal__content slds-p-around_medium rejectionprocedurecontent" id="genericmodalcontent">
+                          </div>
+                           <div class="slds-modal__content slds-p-around_medium rejectionprocedurecontent" id="genericmodalcontent2">
+                           </div>
+                           <div class="slds-modal__content slds-p-around_medium rejectionprocedurecontent" id="genericmodalcontent3">
+                               <!-- <apex:form >
+                                    <c:SLDSDynamicLookup SLDSResourceName="{!$Asset.SLDS}" ObjectApiName="User" DisplayFieldApiNames="Name" DisplayFieldsPattern="Name - Username"  photo="field->smallPhotoUrl" LabelName="Agente Validador" SetValueToField="{!strIDUser}"/>
+                                </apex:form> -->
+                                <apex:form >
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-select_container">
+                                            <apex:selectList value="{!strIDUser}" id="strIDUser" multiselect="false" styleClass="slds-select" size="1" html-placeholder="Select an Option">
+                                                <apex:selectOption itemValue="---" itemLabel="---"/>
+                                                <apex:selectOptions value="{!lstUserOptions}" />
+                                            </apex:selectList>
+                                        </div>
+                                    </div>
+                                </apex:form>
+                           </div>
+                          <footer class="slds-modal__footer">
+                            <!-- <button class="slds-button slds-button_neutral" onclick="closeModal()">{!$Label.AAZ_DocumentValidate_016}</button> -->
+                            <button class="slds-button slds-button_brand" onclick="saveModal()" id="buttomgeneric">{!$Label.AAZ_DocumentValidate_017}</button>
+                          </footer>
+                        </div>
+                      </section>
+                      <div class="slds-backdrop slds-backdrop_open" id="genericmodalbackground" style="display:none;"></div>
+                    </div>
+
+                    <div id="modal-backdrop" class="slds-backdrop slds-backdrop_closed"></div>
+
+                    <!-- Modal para cambiar estatus a Pendiente -->
+                    <apex:form >
+                        <section id="pendingModal" role="dialog" tabindex="-1" aria-label="Meaningful description of the modal content" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-closed">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <button type="button" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="hideModal('pendingModal');">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close') }" xmlns:xlink="http://www.w3.org/1999/xlink" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Pendiente</h2>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <div class="slds-form slds-form_stacked">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label">Comentarios:</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputTextarea value="{! strPendingComment }" styleClass="slds-textarea" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button type="button" class="slds-button slds-button_neutral" onclick="hideModal('pendingModal');">Cancelar</button>
+                                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Guardar" status="Pending" action="{! savePending }" oncomplete="closeTab();" />
+                                </footer>
+                            </div>
+                        </section>
+                    </apex:form>
+
+                    <!-- Modal para cambiar estatus a Aceptado -->
+                    <apex:form >
+                        <section id="acceptModal" role="dialog" tabindex="-1" aria-label="Meaningful description of the modal content" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-closed">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <button type="button" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="hideModal('acceptModal');">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close') }" xmlns:xlink="http://www.w3.org/1999/xlink" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Aceptar</h2>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <div class="slds-form slds-form_stacked">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label">Comentario:</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputTextarea value="{! strAceptComment }" styleClass="slds-textarea" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button type="button" class="slds-button slds-button_neutral" onclick="hideModal('acceptModal');">Cancelar</button>
+                                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Guardar" action="{! saveAccept }" oncomplete="startRefreshProcess();"/>
+                                </footer>
+                            </div>
+                        </section>
+                    </apex:form>
+
+                    <!-- Modal para cambiar estatus a Rechazado-->
+                    <apex:form >
+                        <section id="rejectModal" role="dialog" tabindex="-1" aria-label="Meaningful description of the modal content" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-closed">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <button type="button" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="hideModal('rejectModal');">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close') }" xmlns:xlink="http://www.w3.org/1999/xlink" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Rechazar</h2>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <div class="slds-form slds-form_stacked">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label">Comentario:</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputTextarea value="{! strComment }" styleClass="slds-textarea" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button type="button" class="slds-button slds-button_neutral" onclick="hideModal('rejectModal');">Cancelar</button>
+                                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Guardar" action="{! saveAllRejections }" oncomplete="startRefreshProcess();"/>
+                                </footer>
+                            </div>
+                        </section>
+                    </apex:form>
+
+                    <!-- Modal para Revertir Rechazo -->
+                    <apex:form >
+                        <section id="revertModal" role="dialog" tabindex="-1" aria-label="Meaningful description of the modal content" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-closed">
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <button type="button" class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="hideModal('revertModal');">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close') }" xmlns:xlink="http://www.w3.org/1999/xlink" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Revertir</h2>
+                                </header>
+                                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                    <div class="slds-form slds-form_stacked">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label">Comentario:</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputTextarea value="{! strRevertComment }" styleClass="slds-textarea" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <button type="button" class="slds-button slds-button_neutral" onclick="hideModal('revertModal');">Cancelar</button>
+                                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Guardar" action="{! saveRevert }" oncomplete="startRefreshProcess();"/>
+                                </footer>
+                            </div>
+                        </section>
+                    </apex:form>
+                </div>
+
+            </apex:outputPanel>
+
+            <apex:outputPanel rendered="{!blnIsComplainRecord}" >
+                <div class="slds-scope">
+                    <apex:actionStatus id="processing">
+                        <apex:facet name="start">
+                            <div class="slds-spinner_container slds-is-fixed">
+                                <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                    <span class="slds-assistive-text">procesando</span>
+                                    <div class="slds-spinner__dot-a"></div>
+                                    <div class="slds-spinner__dot-b"></div>
+                                </div>
+                            </div>
+                        </apex:facet>
+                    </apex:actionStatus>
+
+                    <div class="slds-spinner_container" id="spinner">
+                        <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                            <span class="slds-assistive-text">Cargando</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                    <apex:outputPanel id="msgs">
+                        <apex:outputPanel rendered="{!lstErrorMsgs.size <> 0}">
+                            <div class="BAZ">
+                                <div class="slds-notify_container" style="position:relative; width: 100%;">
+                                    <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+                                        <span class="slds-assistive-text">Error</span>
+                                        <h2>
+                                                <ul>
+                                                    <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+                                                        <li>
+                                                            {!strMsg}
+                                                        </li>
+                                                    </apex:repeat>
+                                                </ul>
+                                            </h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="OPResults" rendered="{!lstSuccessMsgs.size <> 0}">
+                            <div class="slds-notify_container" style="position:relative; width: 100%;">
+                                <div class="slds-notify slds-notify--alert slds-theme--alert-texture" role="alert">
+                                    <span class="slds-assistive-text">Info</span>
+                                    <ul>
+                                        <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+                                            <li>
+                                                {!strMsg}
+                                            </li>
+                                        </apex:repeat>
+                                    </ul>
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <apex:form id="mainForm">
+                        <div class="slds-page-header" role="banner">
+                            <div class="slds-media slds-align--absolute-center">
+                                <div class="slds-media__figure">
+                                    <svg class="slds-icon slds-icon-standard-case" aria-hidden="true">
+                                        <use xlink:href="{! URLFOR($RESOURCE.AAZ_SLDS,'/assets/icons/standard-sprite/svg/symbols.svg#case')}"></use>
+                                    </svg>
+                                </div>
+                                <div class="slds-media__body">
+                                    <p class="slds-page-header__title slds-truncate" title="Nuevo Caso">Detalle de {!Case.RecordType.Name}</p>
+                                    <p class=".slds-page-header__detail-row slds-truncate" title="Nuevo Caso">Número {!Case.CaseNumber}</p>
+                                </div>
+                                <div class="slds-media__body">
+                                </div>
+                                <div class="slds-media__body">
+                                    <section class="slds-clearfix">
+                                        <div class="slds-float--right">
+                                            <div class="slds-button-group" role="group">
+                                                <apex:commandButton value="Cerrar queja" onclick="CloseCase();return false;" styleClass="slds-button slds-button--neutral" style="font-size: 9px; height: 32px; width: 102px;" disabled="{!IF(caseInstance.Status='CERRADA',true,false)}"/>
+                                                <!-- <button type="button" onclick="CloseCase();" class="slds-button slds-button--neutral" style="font-size: 9px; height: 32px;width: 100px;">
+                                                    Cerrar queja
+                                                </button> -->
+                                                <apex:commandButton value="Modificar" onclick="openEdition();return false;" styleClass="slds-button slds-button--neutral" style="font-size: 9px; height: 32px; width: 102px;" disabled="{!IF(caseInstance.Status='CERRADA',true,false)}"/>
+                                                <!-- <button type="button" disabled="{!IF(OR(blnAPIsLock,caseInstance.Status='CERRADA'),true,false)}" onclick="openEdition();" class="slds-button slds-button--neutral"  style="font-size: 9px; height: 32px; width: 100px;">
+                                                    Modificar
+                                                </button> -->
+                                                <apex:commandButton disabled="{!IF(OR(blnAPIsLock,caseInstance.Status='CERRADA', caseInstance.complaintsAndTrades__r.Status__c = 'ACTIVO', caseInstance.complaintsAndTrades__r.Status__c = 'unlock'),true,false)}" status="processing"  styleClass="slds-button slds-button--neutral" action="{!LockUnlockAP2}" value="Desbloquear AP" oncomplete="startRefreshProcess();" style="font-size: 9px; height: 32px; width: 102px;"/>
+                                                <apex:commandButton disabled="{!IF(OR(NOT(blnAPIsLock),caseInstance.Status='CERRADA', caseInstance.complaintsAndTrades__r.Status__c = 'lock'),true,false)}" status="processing"  styleClass="slds-button slds-button--neutral" oncomplete="showDialog();" value="Bloquear AP"  style="font-size: 9px; height: 32px; width: 102px;"/>
+                                                <script type="text/javascript">
+                                                    function openEdition() {
+                                                        window.location.href = '{! URLFOR($Action.Case.Edit, Case.Id) }';
+                                                    }
+                                                    function CloseCase() {
+                                                        window.location.href = '{! URLFOR($Action.Case.CloseCase, Case.Id) }';
+                                                    }
+                                                </script>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="modalDialog" class="slds-hide">
+                            <div role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <div class="slds-modal__header slds-modal__header slds-modal__header--empty">
+                                        <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="hideDialog();">
+                                            <svg class="slds-button__icon slds-button__icon--large" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Motivo de bloqueo/Desbloqueo</h2>
+                                    </div>
+                                    <div class="slds-modal__content slds-p-around--medium">
+                                        <div class="slds-form--stacked">
+                                            <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="Nombre">Motivo:</label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputField id="text-input-4" value="{!contactQuerry2.BlockReasons__c}" styleClass="slds-input"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-modal__footer">
+                                        <button class="slds-button slds-button--neutral" onclick="hideDialog();">Cancelar</button>
+                                        <apex:commandButton status="processing" styleClass="slds-button slds-button--brand" value="Guardar" oncomplete="LockUnlockAP2();" reRender="main"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-backdrop slds-backdrop--open"></div>
+                        </div>
+                        <apex:actionFunction action="{!LockUnlockAP2}" name="LockUnlockAP2" oncomplete="save()"/>
+                            <!-- <apex:param name="BlockReasons" value="{!caseInstance.complaintsAndTrades__r.BlockReasons__c}"/>
+                        </apex:actionFunction> -->
+                        <apex:outputPanel style="background-color: white">
+                            <div class="slds-container">
+                                <div id="caseDetailDiv" class="slds-scope"></div>
+                                <script type="text/javascript">
+
+                                    addDetailOnLoadEventListener();
+
+                                    $Lightning.use('c:AAZ_DocumentValidate_app', function() {
+                                        $Lightning.createComponent('force:recordView', {
+                                                'recordId': '{! Case.Id }',
+                                                'type' : 'FULL'
+                                            },
+                                            'caseDetailDiv',
+                                            function(cmp) {
+                                                // Ocultar spinner al cargar componente
+                                                spinner.className = 'slds-hide';
+                                                changeLinksToBlackColorFlag = false;
+                                            }
+                                        );
+                                    });
+                                    function addDetailOnLoadEventListener(){
+                                        document.getElementById('caseDetailDiv').addEventListener("mouseover", function(){
+                                            if(!changeLinksToBlackColorFlag){
+                                            colorLinks();
+                                            enable_link();
+                                            changeLinksToBlackColorFlag = true;
+                                        }
+                                        });
+                                    }
+
+                                    function colorLinks(){
+                                        var links = document.getElementsByTagName("a");
+                                        for(var i=0;i<links.length;i++){
+                                            var linkElement = links[i];
+                                            linkElement.style.color = 'rgb(22, 50, 92)';
+                                        }
+                                    }
+
+                                    function enable_link() { 
+                                        console.log('ESTOY AQUI');
+                                        document.getElementById('caseDetailDiv').setAttribute("a",link);
+                                    } 
+                                </script>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:form>
+                    <apex:pageBlock title="Comentarios">
+                        <apex:pageBlockTable value="{! Case.CaseComments }" var="iterator" columnsWidth="20%,60%,20%" style="font-size: 12px;">
+                            <apex:column style="text-align: left;" headerValue="Fecha Creación" value="{!iterator.CreatedDate}"/>
+                            <apex:column style="text-align: center;" headerValue="Comentario" value="{!iterator.CommentBody}"/>
+                            <apex:column style="text-align: left;" headerValue="Creado Por" value="{!iterator.CreatedById}"/>
+                        </apex:pageBlockTable>
+                    </apex:pageBlock>
+                </div>
+            </apex:outputPanel>
+
+            <apex:form >
+                
+            </apex:form>
+            <script type="text/javascript">
+                
+                function showDialog(){
+                    var dialog = document.getElementById('modalDialog');
+                    dialog.className = "slds-show";
+                }
+                
+                function hideDialog(){
+                    var dialog = document.getElementById('modalDialog');
+                    dialog.className = "slds-hide";
+                }
+                
+                function save(){
+                    hideDialog();
+                    startRefreshProcess();
+                }
+                
+                function startRefreshProcess(){
+                    console.log('Entro');
+                    sforce.console.getEnclosingPrimaryTabId(redirectProcedure);
+                }
+                
+                var redirectProcedure = function (result){
+                    console.log('Entro2');
+                    var newURL = encodeURI('/{!caseInstance.id}');
+                    var newTabName = 'Tramite'
+                    var currentTabId = result.id;
+                    var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newURL+'&newTabName='+newTabName+'&previousTabId='+currentTabId;
+                    sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                };
+
+            </script>
+
+            <script type="text/javascript">
+
+                window.onload = function(){
+                    //Se cambia el estado del Omnichannel a Ocupado            
+                    sforce.console.presence.getServicePresenceStatusId(function(results) {
+                        if (results.success) {
+                            if (results.statusId == '{!$Label.AAZ_DocumentValidate_026}') {
+                                closeOmnichannelSession('{!$Label.AAZ_DocumentValidate_025}');
+                            }
+                        }
+                    });  
+                }
+
+                function closeOmnichannelSession(statusId) {
+                    sforce.console.presence.login(statusId, function(result) {
+                        if (result.success) {
+                            console.log(result);
+                        } else {
+                            console.log(result);
+                        }
+                    });
+                }
+
+                function closeTab(){
+                    console.log('Se cierra');
+                    sforce.console.getEnclosingPrimaryTabId(closeCurrentTab);
+                }
+
+                function hola(){
+                    console.log('HOLA');
+                }
+
+                var closeCurrentTab = function closeCurrentTab(result){
+                  console.log('Se cierra 2');
+                    //Se cambia el estado del Omnichanne a Disponible SI el estatus esta en ocupado
+                        
+                    sforce.console.presence.getServicePresenceStatusId(function(results) {
+                        if (results.success) {
+                            if (results.statusId == '{!$Label.AAZ_DocumentValidate_025}') {
+                                closeOmnichannelSession('{!$Label.AAZ_DocumentValidate_026}');
+                            }
+                        }
+                    });  
+                    var tabId = result.id;
+                    sforce.console.closeTab(tabId);
+                    console.log('Se cierra 3');
+                };
+
+                 // function ShowRejections() {
+                 //     if( $('.center').is(":visible") ){
+                 //         $('#warning').show();
+                 //         $('.center').hide();
+                 //     }else{
+                 //         $('#warning').hide();
+                 //         $('.center').show();
+                 //     }
+                 // }
+
+                //  function selectedFile(param){
+                //     jQuery('[id$=HiddenField]').val(param);
+                //     downloadAllFiles();
+                // }
+
+                 function closeModal() {
+                     $('#rejectionprocedure').hide();
+                     $('#rejectionprocedurebackground').hide();
+                     $('#genericmodal').hide();
+                     $('#genericmodalbackground').hide();
+                 }
+
+                 function devolverModal() {
+                     var label = '<label style="font-size:12px;">Comentario</label>';
+                     var textarea = '<textarea id="devolverModal" name="devolverModal" class="slds-textarea"></textarea>';
+
+                     $('#rejectionprocedure').hide();
+                     $('#rejectionprocedurebackground').hide();
+                     $('#genericmodalheading').html('Devolver');
+                     $('#genericmodalcontent').hide();
+                     $('#genericmodalcontent2').html(label + textarea);
+                     $('#genericmodalcontent3').show();
+                     $('#genericmodal').show();
+                     $('#genericmodalbackground').show();
+                     $('#buttomgeneric').attr('onclick','saveBackProcedure()');
+
+                 }
+
+                 // function revertirModal() {
+                 //     var label = '<label style="font-size:12px;">{!$Label.AAZ_DocumentValidate_001}</label>';
+                 //     var textarea = '<textarea id="revertmodal" name="revertmodal" class="slds-textarea"></textarea>';
+                 //     $('#rejectionprocedure').hide();
+                 //     $('#rejectionprocedurebackground').hide();
+                 //     $('#genericmodalheading').html('{!$Label.AAZ_DocumentValidate_003}');
+                 //     $('#genericmodalcontent').html(label + textarea);
+                 //     $('#genericmodalcontent3').hide();
+                 //     $('#genericmodal').show();
+                 //     $('#genericmodalbackground').show();
+                 //     $('#buttomgeneric').attr('onclick','saveRevertComent()');
+                 // }
+
+                /*function aceptarModal() {
+                     var label = '<label style="font-size:12px;">{!$Label.AAZ_DocumentValidate_001}</label>';
+                     var textarea = '<textarea id="aceptmodal" name="aceptmodal" class="slds-textarea"></textarea>';
+                     $('#rejectionprocedure').hide();
+                     $('#rejectionprocedurebackground').hide();
+                     $('#genericmodalheading').html('{!$Label.AAZ_DocumentValidate_018}');
+                     $('#genericmodalcontent').html(label + textarea);
+                     $('#genericmodalcontent3').hide();
+                     $('#genericmodal').show();
+                     $('#genericmodalbackground').show();
+                     $('#buttomgeneric').attr('onclick','saveAceptComent()');
+                 }*/
+
+                 function biometricalmodal(){
+                     var label = '<label style="font-size:12px;">{!$Label.AAZ_DocumentValidate_001}</label>';
+                     var textarea = '<textarea id="aceptmodal" name="aceptmodal" class="slds-textarea"></textarea>';
+                     $('#rejectionprocedure').hide();
+                     $('#rejectionprocedurebackground').hide();
+                     $('#genericmodalheading').html('{!$Label.AAZ_DocumentValidate_018}');
+                     $('#genericmodalcontent').html(label + textarea);
+                     $('#genericmodalcontent3').hide();
+                     $('#genericmodal').show();
+                     $('#genericmodalbackground').show();
+                     $('#buttomgeneric').attr('onclick','saveAceptComent()');
+                 }
+
+                 function rechazarModal() {
+                     $('#genericmodal').hide();
+                     $('#genericmodalbackground').hide();
+                     $('#rejectionprocedureheading').html('{!$Label.AAZ_DocumentValidate_004}');
+                     $('#rejectionprocedurecontent').html($('#selectprocedure').html());
+                     $('.optionsprocedure').find('.selectprocedure').remove()
+                     $('#selectprocedure').show()
+                     $('#rejectionprocedure').show();
+                     $('#rejectionprocedurebackground').show();
+                     jQuery('.selectpicker2').select2(
+                         {
+                             width: '100%',
+                             dropdownParent: $("#rejectionprocedurecontent")
+                         }
+                     );
+                     $('.selectpicker2').next('.select2').mouseenter(function() {
+                             jQuery('.selectpicker2').select2('open');
+                     });
+
+                     $(document).on('mouseleave', '.select2-container', function(e) {
+                             if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                                     jQuery('.selectpicker2').select2('close');
+                             }
+                     });
+
+                     jQuery('.selectpicker2').change(function(){
+                        jQuery('[id$=HiddenField2]').val($('.selectpicker2').val());
+                        var intBusqueda = $.inArray('{!intOtro}', $('.selectpicker2').val());
+                        var intBusqueda2 = $.inArray('{!intOtro2}', $('.selectpicker2').val());
+                        console.log('***intBusqueda:  '+intBusqueda);
+                        console.log('***intBusqueda2:'+intBusqueda2);
+                        console.log(jQuery('[id$=HiddenField2]'));
+                        console.log($('.selectpicker2').val());
+                        console.log('{!intOtro}');
+                        if ((intBusqueda == 0 && intBusqueda2 == -1)||(intBusqueda == -1 && intBusqueda2 == 0)) {
+                          $('#comentsRejections').show();
+                        } else {
+                          $('#comentsRejections').hide();
+                        }
+                        executeRejection();
+                     });
+
+                 }
+
+                 function saveModal() {
+                     var coment = $('#pendientesmodal').val();
+                     if (coment != '') {
+                         $('#pendingerrormsg').hide();
+                         jQuery('[id$=HiddenField4]').val($('#pendientesmodal').val());
+                         saveCommentPending();
+                     } else {
+                         $('#pendingerrormsg').show();
+                     }
+                 }
+
+                 function saveAllRejections() {
+                   var coment = $('[id$="comentsprocedure"]').val();
+                   jQuery('[id$=HiddenField3]').val(coment);
+                   executeAllRejections();
+                 }
+
+                /*function saveAceptComent() {
+                     var coment = $('[id$="aceptmodal"]').val();
+                     jQuery('[id$=HiddenField6]').val(coment);
+                     executeSaveAceptComent();
+                 }*/
+
+                 function saveRevertComent() {
+                     var coment = $('[id$="revertmodal"]').val();
+                     if (coment != '') {
+                         $('#pendingerrormsg').hide();
+                         jQuery('[id$=HiddenField5]').val(coment);
+                         saveRevert();
+                     } else {
+                         $('#pendingerrormsg').show();
+                     }
+                 }
+
+                 function saveBackProcedure() {
+                     var coment = $('[id$="devolverModal"]').val();
+                     var user = $('[id$="strIDUser"]').val();
+                     if (coment != '') {
+                         $('#pendingerrormsg').hide();
+                         jQuery('[id$=HiddenField4]').val(coment);
+                         jQuery('[id$=HiddenField6]').val(user);
+                         console.log(user);
+                         backProcedure(user);
+                     } else {
+                        console.log('2');
+                        $('#pendingerrormsg').show();
+                     }
+                 }
+
+                 // REFACTORIZADO
+
+                function displayModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    var modalBackdrop = document.getElementById('modal-backdrop');
+                    modal.classList.add('slds-fade-in-open');
+                    modal.classList.remove('slds-fade-in-closed');
+                    modalBackdrop.classList.add('slds-backdrop_open');
+                    modalBackdrop.classList.remove('slds-backdrop_closed');
+                }
+
+                function hideModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    var modalBackdrop = document.getElementById('modal-backdrop');
+                    modal.classList.add('slds-fade-in-closed');
+                    modal.classList.remove('slds-fade-in-open');
+                    modalBackdrop.classList.add('slds-backdrop_closed');
+                    modalBackdrop.classList.remove('slds-backdrop_open');
+                }
+
+                console.log('{! Case.Status }');
+
+                function startRefreshProcess(){
+                              var primaryTabId = '';
+                              var currentSubTabId = '';
+                              var currentOrder = '1';
+                              console.log('1');
+                              sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                            }
+                            var redirectProcess = function redirectProcess(result){
+                              if(result.success){
+                                console.log('2');
+                                currentSubTabId = result.id;
+                                var newSubTabURL = encodeURI('/{!Case.Id}');
+                                var newSubTabName = '{!Case.CaseNumber}' ;
+                                var currentTabId = result.id;
+                                var currentOrder = '1';
+                                var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                }
+                                console.log('3');
+                            };
+
+            </script>
+        </body>
+    </html>
+</apex:page>

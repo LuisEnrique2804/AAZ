@@ -1,0 +1,175 @@
+<!--Observaciones René "Agregar encabezado"-->
+<!--Observaciones René "Agregar etiquetas y mensajes de usuario como etiquetas personalizadas"-->
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo Rodríguez
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar los documentos asociados al trámite.
+Se cargan mediante URL's.
+Se puede acceder a los trámites dando click en su nombre y se pueden descargar dando click en su icono
+de descargar.
+
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Samuel Galindo         Creación
+0.2     13-07-2017    Samuel Galindo         Construcción
+0.9     03-08-2017    Samuel Galindo         Construcción
+1.0     09-08-2017    Samuel Galindo         Finalización y documentación
+1.1     11-08-2017    Samuel Galindo         Ajustes
+1.2     15-10-2017    Daniel Peñaloza        Ajustes de visualización y refactorización de código
+*******************************************************************************-->
+
+<apex:page standardController="Case"
+	showHeader="false" standardStylesheets="false" sidebar="false"
+	applyHtmlTag="false" applyBodyTag="false"
+	extensions="AAZ_DocumentList_ctr">
+	<html>
+		<head>
+			<meta charset="utf-8" />
+			<apex:includeScript value="/support/console/40.0/integration.js"/>
+			<apex:includeScript value="{!URLFOR($Resource.JSZIP)}"/>
+		</head>
+		<body style="background-color: white;">
+			<apex:slds />
+
+			<div class="slds-scope">
+
+				<apex:actionStatus id="processing">
+					<apex:facet name="start">
+							<div class="slds-spinner_container slds-is-fixed">
+								<div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+									<span class="slds-assistive-text">Processing</span>
+									<div class="slds-spinner__dot-a"></div>
+									<div class="slds-spinner__dot-b"></div>
+								</div>
+							</div>
+					</apex:facet>
+				</apex:actionStatus>
+
+				<apex:form >
+					<apex:actionFunction name="downloadFile" action="{! downloadFile }" reRender="thePanel" oncomplete="getBase64Files()" status="processing">
+						<apex:param id="strDocTypeId" name="strDocTypeId" value="" />
+						<apex:param id="strPageNumber" name="strPageNumber" value="" />
+					</apex:actionFunction>
+
+					<apex:outputPanel id="thePanel">
+					    <script type="text/javascript">
+					        function getBase64Files() {
+					            var respObj = JSON.parse('{! strDigitalizationFile }');
+					            var rows = respObj['data'];
+					            console.log(rows);
+					            var link = document.createElement('a');
+					            var url = 'data:image/jpg;base64,'+rows[0]['Body'];
+					            link.href = url;
+					            link.download = rows[0]['Name']+'.jpg';
+					            document.body.appendChild(link);
+					            link.click();
+					            setTimeout(function(){
+					                    document.body.removeChild(link);
+					                    window.URL.revokeObjectURL(url);
+					            }, 100);
+					        }
+					    </script>
+					</apex:outputPanel>
+
+					<apex:repeat value="{! mapDocuments }" var="docTypeId">
+						<div class="slds-selected slds-p-around_xx-small" style="border-bottom: 1px solid #CCCCCC;">
+							<button type="button" onclick="displayPages('{! docTypeId }')" class="slds-button slds-button_icon slds-button_icon-border-filled  slds-button_icon-x-small" title="Ver Páginas">
+			                	<svg class="slds-button__icon slds-button__icon_hint slds-button__icon_small" aria-hidden="true">
+			                    	<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#chevronright') }" />
+			                  	</svg>
+			                  	<span class="slds-assistive-text">Ver Páginas</span>
+			                </button>
+			                <a href="#" onclick="openDocumentPage('{! docTypeId }', 1)">{! mapDocTypes[docTypeId].Label }</a>
+						</div>
+						<div id="doc-pages-{! docTypeId }" class="slds-padding-left-small slds-hide">
+							<apex:dataTable value="{! mapDocuments[docTypeId] }" var="doc" styleClass="slds-table slds-text-body_small">
+								<apex:column >
+									&nbsp; &nbsp; <a href="#" onclick="openDocumentPage('{! docTypeId }', '{! doc.page__c }')"><span class="slds-p-left_small">Página {! doc.page__c } ></span></a>
+								</apex:column>
+								<apex:column >
+								<button type="button" onclick="downloadFile2('{! doc.FileURL__c }')" class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" title="Descargar">
+								<!-- <button type="button" onclick="downloadFile2('{! docTypeId }', '{! doc.page__c }')" class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" title="Descargar"> -->
+													<svg class="slds-button__icon slds-button__icon_hint slds-button__icon_small" aria-hidden="true">
+															<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#download') }" />
+														</svg>
+														<span class="slds-assistive-text">Descargar</span>
+												</button>
+									<!-- <button type="button" onclick="downloadFile('{! docTypeId }', '{! doc.page__c }')" class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" title="Descargar">
+					                	<svg class="slds-button__icon slds-button__icon_hint slds-button__icon_small" aria-hidden="true">
+					                    	<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{! URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#download') }" />
+					                  	</svg>
+					                  	<span class="slds-assistive-text">Descargar</span>
+					                </button> -->
+								</apex:column>
+							</apex:dataTable>
+						</div>
+				    </apex:repeat>
+
+				</apex:form>
+				<div id="loading" class="demo-only" style="height: 6rem;display:none">
+					<div role="status" class="slds-spinner slds-spinner_medium">
+					<span class="slds-assistive-text">Loading</span>
+					<div class="slds-spinner__dot-a"></div>
+					<div class="slds-spinner__dot-b"></div>
+					</div>
+				</div>
+			</div>
+
+			<script type="text/javascript">
+				// Mostrar u ocultar páginas de un documento
+				function downloadFile2(urlLink)
+				{
+					console.log('urlLink '+urlLink);
+					// Construct the a element
+					var link = document.createElement("a");
+					link.download = 'Archivo';
+					link.target = "_blank";
+
+					// Construct the uri
+					link.href = urlLink;
+					document.body.appendChild(link);
+					link.click();
+
+					// Cleanup the DOM
+					document.body.removeChild(link);
+					delete link;
+				}
+				function displayPages(docTypeId) {
+					var pages = document.getElementById('doc-pages-' + docTypeId);
+					var isHidden = pages.classList.contains('slds-hide');
+
+					if (isHidden) {
+						pages.classList.add('slds-show');
+						pages.classList.remove('slds-hide');
+					} else {
+						pages.classList.add('slds-hide');
+						pages.classList.remove('slds-show');
+					}
+				}
+
+				// Abrir un archivo
+				function openDocumentPage(docTypeId, pageNumber) {
+					var primaryTabId = '';
+					var currentSubTabId = '';
+					var currentOrder = '';
+					var pageParameters = '&docTypeId=' + docTypeId + '&pageNumber=' + pageNumber;
+					console.log(pageParameters);
+
+					sforce.console.getEnclosingPrimaryTabId(function (result) {
+						if(result.success){
+							currentSubTabId = result.id;
+							var newSubTabURL = encodeURI('/{! caseInstance.Id }');
+							var newSubTabName = '{! caseInstance.CaseNumber }' ;
+							var currentTabId = result.id;
+							var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder + pageParameters;
+							sforce.console.openPrimaryTab(null,urlToRedirect, true,'Cargando...',null);
+						}
+					});
+				}
+			</script>
+		</body>
+	</html>
+</apex:page>

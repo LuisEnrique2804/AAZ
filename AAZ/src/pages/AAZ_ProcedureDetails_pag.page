@@ -1,0 +1,50 @@
+<!--***Revisión René  "Eliminar visualforce" ****-->
+
+
+<apex:page standardController="Case" sidebar="false" showHeader="false">
+	<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<head>
+			<meta charset="UTF-8"/>
+			<apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+			<apex:includeLightning />
+			<apex:slds />
+			<script type="text/javascript">  
+				
+				window.onload = function(){
+					sforce.connection.sessionId = '{!GETSESSIONID()}';
+					if('{!NOT(ISNULL(Case.Id))}' == 'true'){
+						openDetail();
+					}else{
+					} 
+				}
+
+				function openDetail(){
+					var spinner = document.getElementById('spinner');
+                    spinner.className = 'slds-show';
+                    $Lightning.use('c:AAZ_ProcedureDetails_LApp', function() {
+                        $Lightning.createComponent('force:recordView', {
+                                'recordId': '{!Case.Id}',
+                                'type' : 'MINI'
+                            },
+                            'ProcedureDetailsDiv',
+                            function(cmp) {
+                                spinner.className = 'slds-hide';
+                            }
+                        );
+                    });
+				}
+
+			</script>
+		</head>
+		<body class="slds-scope" style="background-color: white;">
+			<div class="slds-spinner_container slds-is-fixed" id="spinner">
+                <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                    <span class="slds-assistive-text">Cargando</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+			<div id="ProcedureDetailsDiv"/>
+		</body>
+	</html>
+</apex:page>

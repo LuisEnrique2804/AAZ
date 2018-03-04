@@ -1,0 +1,121 @@
+[
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000004nxXCAQ"
+        },
+        "Id": "0Adg00000004nxXCAQ",
+        "AuraDefinitionBundleId": "0Abg00000008YoGCAU",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008YoGCAU"
+            },
+            "DeveloperName": "AAZ_AccountDetails_LApp"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000004nxcCAA"
+        },
+        "Id": "0Adg00000004nxcCAA",
+        "AuraDefinitionBundleId": "0Abg00000008YoLCAU",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008YoLCAU"
+            },
+            "DeveloperName": "AAZ_AgentDetails_LApp"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000004nxhCAA"
+        },
+        "Id": "0Adg00000004nxhCAA",
+        "AuraDefinitionBundleId": "0Abg00000008YoQCAU",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008YoQCAU"
+            },
+            "DeveloperName": "AAZ_ProcedureDetails_LApp"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000004nxmCAA"
+        },
+        "Id": "0Adg00000004nxmCAA",
+        "AuraDefinitionBundleId": "0Abg00000008YoVCAU",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008YoVCAU"
+            },
+            "DeveloperName": "AAZ_Person_LApp"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000005MrTCAU"
+        },
+        "Id": "0Adg00000005MrTCAU",
+        "AuraDefinitionBundleId": "0Abg00000008lKYCAY",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008lKYCAY"
+            },
+            "DeveloperName": "AAZ_PromoterAgentFileSending_LCom"
+        },
+        "DefType": "COMPONENT",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg00000005MrYCAU"
+        },
+        "Id": "0Adg00000005MrYCAU",
+        "AuraDefinitionBundleId": "0Abg00000008lKdCAI",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg00000008lKdCAI"
+            },
+            "DeveloperName": "AAZ_PromoterAgentFileSending_LApp"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    },
+    {
+        "attributes": {
+            "type": "AuraDefinition",
+            "url": "/services/data/v40.0/tooling/sobjects/AuraDefinition/0Adg0000000FZ9HCAW"
+        },
+        "Id": "0Adg0000000FZ9HCAW",
+        "AuraDefinitionBundleId": "0Abg0000000DT06CAG",
+        "AuraDefinitionBundle": {
+            "attributes": {
+                "type": "AuraDefinitionBundle",
+                "url": "/services/data/v40.0/tooling/sobjects/AuraDefinitionBundle/0Abg0000000DT06CAG"
+            },
+            "DeveloperName": "AAZ_DocumentValidate_app"
+        },
+        "DefType": "APPLICATION",
+        "Format": "XML"
+    }
+]

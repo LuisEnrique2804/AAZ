@@ -1,0 +1,77 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Samuel Galindo Rodríguez
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo mostrar
+		los trámites(Casos)
+		
+    Cambios (Versiones)
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción
+    *****   *************  *****************************    *********************************
+     0.1     25-10-2017    Samue Galindo Rodríguez          Creacion
+*********************************************************************************************/-->
+<apex:page standardController="Account" extensions="AAZ_AccountList_ctr" showHeader="false" sidebar="false" standardStylesheets="false">
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<apex:includeScript value="/support/console/40.0/integration.js"/>
+			<meta http-equiv="x-ua-compatible" content="ie=edge"/>
+			<style type="text/css">
+				.letras {
+					font-size: 82%;
+					font-weight: bold;
+				}
+			</style>
+		</head>
+		<apex:slds />
+		<body class="slds-scope">
+			<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+			<thead>
+				<tr class="slds-text-title_caps">
+					<apex:repeat value="{! lstFieldSetMembers }" var="field">
+						<th scope="col">
+							<div class="slds-truncate letras" title="{! field.label }">{!field.label}</div>
+						</th>
+					</apex:repeat>
+				</tr>
+			</thead>
+			<tbody>
+				<apex:repeat value="{! lstCase }" var="case">
+					<tr>
+						<apex:repeat value="{! lstFieldSetMembers }" var="field">
+							<td>
+								<div class="slds-truncate letras" title="{! case[field] }">
+									<apex:outputText value="{! case[field] }" rendered="{! IF(field!='CreatedDate' && field!='ContactId' && field!='CaseNumber', true, false) }" />
+									<apex:outputField value="{! case[field] }" rendered="{! IF(field=='CreatedDate', true, false) }"/>
+									<apex:outputText value="{! case.Contact.Name }" rendered="{! IF(field=='ContactId', true, false) }" />
+									<apex:outputLink value="#" rendered="{! IF(field='CaseNumber', true, false)}" onclick="openDocumentPage( '{!case.Id}','{!case[field]}')">{! case[field] }</apex:outputLink>
+								</div>
+							</td>
+						</apex:repeat>
+					</tr>
+				</apex:repeat>
+			</tbody>
+			</table>
+			<script type="text/javascript">
+				function openDocumentPage(caseId, caseNumber) {
+					var primaryTabId = '';
+					var currentSubTabId = '';
+					var currentOrder = '';
+					var id = caseId;
+					var number = caseNumber;
+					sforce.console.getEnclosingPrimaryTabId(function (result) {
+						if(result.success){
+							currentSubTabId = result.id;
+							var newSubTabURL = encodeURI('/'+id);
+							var newSubTabName = number ;
+							var currentTabId = result.id;
+							var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+							sforce.console.openPrimaryTab(null,urlToRedirect, true,'Cargando...',null);
+						}
+					});
+				}
+			</script>
+		</body>
+	</html>
+</apex:page>

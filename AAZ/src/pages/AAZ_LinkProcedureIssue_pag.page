@@ -1,0 +1,14 @@
+<apex:page standardController="SystemIssue__c">
+
+ <apex:includeScript value="/support/console/42.0/integration.js"/>
+ <script type="text/javascript">
+        function openPrimaryTab() {
+            sforce.console.openPrimaryTab(undefined, 
+            '/{!SystemIssue__c.CaseId__c}', true, 'Cargando');
+            console.log('/{!SystemIssue__c.CaseId__c}');
+        }
+  </script>
+    Tramite asociado
+   <A HREF="#" onClick="openPrimaryTab();return false">{!SystemIssue__c.CaseId__r.CaseNumber}</A> 
+
+</apex:page>

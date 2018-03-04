@@ -1,0 +1,14 @@
+<!-- accountview -->
+<apex:page Controller="Delete_Historial_ctr" docType="html-5.0" tabStyle="Account" >
+    <apex:form >
+        <apex:pageMessages id="apexerror"/>
+        <apex:pageBlock title="Modificar Borrado de Datos" >
+            <apex:pageBlockButtons >
+               <apex:commandButton value="Guardar" onclick="return confirm('Esta Seguro?');" action="{!Guardar}"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Información de Borrado de Datos">
+               <apex:input type="date" value="{!datFecha}" label="Fecha Minima de Registros" required="true"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,418 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria 
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo mostrar los resultados de 
+    la busqueda del trabajados (Cuenta), tramite(Caso) y agente promotor(Contacto), asi como 
+    el registro de una queja  y un comentario dentro del mismo
+     
+    Cambios (Versiones)     
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción     
+    *****   *************  *****************************    *********************************   
+     0.1     22-07-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     22-07-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     25-07-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+     1.1     09-08-2017    Luis Enrique Garcia Sanabria     Ajustes
+*********************************************************************************************/-->
+<apex:page standardController="Case" extensions="AAZ_HomePage_ctr" showHeader="false" sidebar="false" standardStylesheets="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <meta charset="utf-8"/>
+            <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <style type="text/css">
+                .select {
+                    border-radius: 8px;
+                    padding: 5px 30px 10px 10px;
+                    float: none;
+                    font-weight: bold;
+                    color: #fff;
+                    vertical-align: middle;
+                    background-size: 13px 10px;
+                    background-position: 85% 50%;
+                    cursor: pointer;
+                    position: relative;
+                    display: inline-block;
+                }
+                /**Opciones**/
+                .opciones {
+                    display: none;
+                    position: absolute;
+                    background-color: #f3f4f5;
+                    min-width: 160px;
+                    border-radius: 4px;
+                    margin: 10px 0px 0px -10px;
+                    z-index: 1;
+                }
+                .opciones a {
+                    color: #000;
+                    text-decoration: none;
+                    padding: 10px;
+                    display: block;
+                    text-align: left;
+                }
+                .opciones a:hover {
+                    background-color: #fff;
+                    box-shadow: 0px 0px 0px 1px #339999;
+                }
+                .select:hover .opciones {
+                    display: block;
+                }
+                .h1h1{
+                    font-size: 16px;
+                }
+                h1.h0{
+                    font-size: 12px;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-weight: bold;
+                }
+            </style>
+            <apex:includeScript value="/support/console/38.0/integration.js" />
+            <apex:slds />
+        </head>
+        <body class="slds-scope" style="background-color: white; width: 100%;">
+            <apex:actionStatus id="processing">
+                <apex:facet name="start">
+                    <div class="slds-spinner_container slds-is-fixed">
+                        <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                            <span class="slds-assistive-text">Processing</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionStatus>
+            <div >
+                <!-- Page Header -->
+                <div class="slds-page-header" role="banner" style="background-color: #fff">
+                    <div class="slds-grid">
+                        <!-- Header Title -->
+                        <div class="slds-col slds-has-flexi-truncate">
+                            <div class="slds-media slds-no-space slds-grow">
+                                <div class="slds-media__figure">
+                                    <div id="homePageIcon">
+                                        <apex:image value="{!URLFOR($Resource.AAZ_Inicio)}" style="height: 30px;"/>
+                                    </div>
+                                </div>
+                                <div class="slds-media__body">
+                                    <p class="slds-text-title--caps slds-line-height--reset slds-m-right--large slds-text-heading_large" style="font-size:13px; font-family: Arial, Helvetica; color: #75787b; font-weight: bold; ">{!$Label.AAZ_HomePAge_020}</p>
+                                    <h1 class="slds-page-header__title slds-m-right--medium slds-align-middle slds-truncate slds-text-heading_large" style="font-size:13px; font-family: Arial, Helvetica; color: #af272f;" title="Record Title">{!$Label.AAZ_HomePAge_021}</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- .\Header Title -->
+                    </div>
+                </div>
+                <!-- .\Page Header -->
+                <div class="slds-grid slds-m-top--x-small">
+                    <!-- Casos -->
+                    <div  class="slds-col slds-size--1-of-2 slds-m-horizontal--small">
+                        <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!IF($Profile.Name == 'Analista Validador',$Label.AAZ_HomePAge_022,IF($Profile.Name == 'Sistemas',$Label.AAZ_HomePAge_023,$Label.AAZ_HomePAge_024))}</h3>
+                        <div class="slds-box slds-m-top--x-small" style="height:220px;">                                                                               
+                            <div class="slds-scrollable" style="height:220px;">
+                                <p>
+                                    <apex:form id="IdFormTask" style="text-align: left;" >
+                                        <apex:outputPanel rendered="{!blnCaseWasSuccessfulyAssociated}">
+                                            <script type="text/javascript">
+                                                function startRefreshProcess(){
+                                                    sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                                                }
+                                                var redirectProcess = function redirectProcess(result){
+                                                    var newURL = encodeURI('/{!associatedAccount}');
+                                                    var newTabName = 'Tramite' 
+                                                    var currentTabId = result.id;
+                                                    var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newURL+'&newTabName='+newTabName+'&previousTabId='+currentTabId;
+                                                    sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                                }; 
+                                                setTimeout(startRefreshProcess,250);
+                                            </script>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel rendered="{!$Profile.Name <> 'Sistemas'}">
+                                            <apex:outputPanel rendered="{!AND(lstFoundToShow.size<>0,blnSearchHasBeenPerformed)}">                       
+                                                <table style="table-layout:fixed; width:100%;  " class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                                    <!--Encabezado-->
+                                                    <thead>
+                                                        <tr class="slds-text-title--caps" style="background-color:#af272f; color:white; font-size: 8px; font-weight: bold;">
+                                                            <th scope="col" style="text-align:center;">
+                                                                <div class="slds-truncate" title="Numero de caso">
+                                                                    {!$LAbel.AAZ_HomePAge_025}
+                                                                </div>
+                                                            </th>
+                                                            <th scope="col" style="text-align:center;">
+                                                                <div class="slds-truncate" title="Numero de caso">
+                                                                    {!$LAbel.AAZ_HomePAge_026}
+                                                                </div>
+                                                            </th>
+                                                            <apex:repeat value="{!$ObjectType.Case.Fieldsets.ListOptions}" var="field">
+                                                                <th scope="col" style="text-align:center;">
+                                                                    <div class="slds-truncate" title="{!field.label}">
+                                                                        {!field.label}
+                                                                    </div>
+                                                                </th>
+                                                            </apex:repeat>
+                                                        </tr>
+                                                    </thead>
+                                                    <!--Se muestra -en el cuerpo de la tabla- cada registro de cuentas para el índice actual-->
+                                                    <tbody>
+                                                        <apex:repeat value="{!lstFoundToShow}" var="case">
+                                                            <tr class="slds-page-header slds-grid--align-center" style="background-color:white; color:#75787b; font-weight: bold;font-size: 10px">
+                                                                <td class="slds-truncate" style="text-align:center;">
+                                                                     <apex:commandLink value="{!case.CaseNumber}" action="{!updateCurrentLink}" >
+                                                                        <apex:param name="caseAcc" value="{!case.AccountId}"/>
+                                                                        <apex:param name="caseId" value="{!case.Id}"/>
+                                                                    </apex:commandLink>
+                                                                </td>
+                                                                <td class="slds-truncate" style="text-align:center;">
+                                                                     <apex:outputLabel value="{!case.Account.name}" />
+                                                                </td>
+                                                                <apex:repeat value="{!$ObjectType.Case.Fieldsets.ListOptions}" var="field">
+                                                                    <td data-albel="{!case[field]}" style="text-align:center;">
+                                                                        <div class="slds-truncate">
+                                                                            <apex:outputField value="{!case[field]}" />
+                                                                        </div>
+                                                                    </td>
+                                                                </apex:repeat>
+                                                            </tr>
+                                                        </apex:repeat>
+                                                    </tbody>
+                                                </table>
+                                                <br/>
+                                                <apex:outputText style="position: relative; right: -3px; top: 6px; color:#75787b; font-weight: bold;" value="Casos pendientes: {!intTotal}"/>
+                                                <div class="slds-grid slds-grid--align-center">
+                                                    <apex:commandButton action="{!previousAccs}" value="{!$Label.AAZ_HomePAge_027}" reRender="IdFormTask" rendered="{!IF(OR(intLastIndex==0,intCurrentIndex==1),'false','true')}" styleClass="slds-button slds-button--neutral" />
+                                                    <apex:commandButton action="{!nextAccs}" value="{!$Label.AAZ_HomePAge_028}" reRender="IdFormTask" rendered="{!IF(OR(intLastIndex==0,intCurrentIndex==intLastIndex),'false','true')}" styleClass="slds-button slds-button--neutral" />
+                                                </div>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{!AND(lstFoundToShow.size==0,NOT(blnSearchHasBeenPerformed))}">
+                                                <div>
+                                                    <h1 class="h0" style="margin-left: 450px">{!$Label.AAZ_HomePAge_001}</h1>
+                                                </div>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel rendered="{!$Profile.Name == 'Sistemas'}">
+                                            <table style="table-layout:fixed; width:100%;  " class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                                <!--Encabezado-->
+                                                <thead>
+                                                    <tr class="slds-text-title--caps" style="background-color:#af272f; color:white; font-size: 8px; font-weight: bold;">
+                                                        <apex:repeat value="{!$ObjectType.SystemIssue__c.Fieldsets.LstIssues}" var="field">
+                                                            <th scope="col" style="text-align:center;">
+                                                                <div class="slds-truncate" title="{!field.label}">
+                                                                    {!field.label}
+                                                                </div>
+                                                            </th>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </thead>
+                                                <!--Se muestra -en el cuerpo de la tabla- cada registro de cuentas para el índice actual-->
+                                                <tbody>
+                                                    <apex:repeat value="{!lstFoundToShowI}" var="issue">
+                                                        <tr class="slds-page-header slds-grid--align-center" style="background-color:white; color:#75787b; font-weight: bold;font-size: 10px">
+                                                            <apex:repeat value="{!$ObjectType.SystemIssue__c.Fieldsets.LstIssues}" var="field">
+                                                                <td data-albel="{!issue[field]}" style="text-align:center;">
+                                                                    <div class="slds-truncate">
+                                                                        <apex:outputField value="{!issue[field]}" />
+                                                                    </div>
+                                                                </td>
+                                                            </apex:repeat>
+                                                        </tr>
+                                                    </apex:repeat>
+                                                </tbody>
+                                            </table>
+                                            <br/>
+                                            <div class="slds-grid slds-grid--align-center">
+                                                <apex:commandButton status="Procesing" action="{!previousAccs}" value="Anterior" reRender="IdFormTask" rendered="{!IF(OR(intLastIndex==0,intCurrentIndex==1),'false','true')}" styleClass="slds-button slds-button--neutral" />
+                                                <apex:commandButton status="processing" action="{!nextAccs}" value="Siguiente" reRender="IdFormTask" rendered="{!IF(OR(intLastIndex==0,intCurrentIndex==intLastIndex),'false','true')}" styleClass="slds-button slds-button--neutral" />
+                                            </div>
+                                        </apex:outputPanel>
+                                    </apex:form>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-grid slds-m-top--large">
+                    <!-- Productividad/Tareas -->
+                    <div class="slds-col slds-size--1-of-2 slds-m-horizontal--small">
+                        <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!IF($Profile.Name == 'Sistemas','Tareas','Productividad')}</h3>
+                        <div class="slds-box slds-m-top--x-small" style="height:270px;">
+                            <div class="slds-scrollable" style="height: 250px; position: relative; top: -10px;">
+                                <apex:form >
+                                    <apex:outputPanel rendered="{!$Profile.Name <> 'Sistemas'}">
+                                        <table class="slds-table slds-table--bordered slds-table--cell-buffer" style="width: 100%; table-layout: fixed; font-family: Arial, Helvetica, sans-serif; font-size:12px; display:{!IF(AND(lstStatusInteger.size <> 0, lstStatusInteger.size <> 0),'table','none')}; font-weight: bold;">
+                                            <thead >
+                                                <tr style="background-color:#af272f;">
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_002}
+                                                    </td>
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_003}
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="">
+                                                <apex:repeat value="{!lstStatusCount}" var="statusS">
+                                                    <tr class="slds-page-header">
+                                                        <td class="slds-truncate" style="text-align:center; color:#75787b;  background-color:white;">
+                                                            <apex:outputtext value="{!statusS.statusStr}" /> 
+                                                        </td>
+                                                        <td class="slds-truncate" style="text-align:center; color:#75787b;  background-color:white;">
+                                                            <apex:outputtext value="{!statusS.statusInt}" />
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                                <tr class="slds-page-header">
+                                                    <td class="slds-truncate" style="text-align:center; color:#75787b;  background-color:white;">{!$Label.AAZ_HomePAge_004}</td>
+                                                    <td class="slds-truncate" style="text-align:center; color:#75787b;  background-color:white;">{!intTotal}</td>
+                                                </tr>
+                                                
+                                            </tbody>
+                                        </table>
+                                        <a href="" onclick="openURL('{!$Label.AAZ_UrlDI}','Mi Productividad')">{!$Label.AAZ_HomePAge_005}</a>
+                                        <br/>
+                                        <a href="" onclick="openURL('{!$Label.AAZ_UrlDG}','Productividad Global')">{!$Label.AAZ_HomePAge_006}</a>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!$Profile.Name == 'Sistemas'}">
+                                        <table class="slds-table slds-table--bordered slds-table--cell-buffer" style="table-layout: fixed; font-family: Arial, Helvetica, sans-serif; font-size:12px; display:{!IF(activities.size <> 0,'table','none')};">
+                                            <thead >
+                                                <tr style="background-color:#b6210b;">
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_007}
+                                                    </td>
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_008}
+                                                    </td>
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_009}
+                                                    </td>
+                                                    <td style="color:#fff; text-align:center;">
+                                                        {!$Label.AAZ_HomePAge_010}
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <apex:repeat value="{! activities }" var="activity">
+                                                    <tr class="slds-page-header">
+                                                        <td class="slds-truncate" style="text-align:center;">
+                                                            <apex:outputLabel value="{! activity.Account.Name}" />
+                                                        </td>
+
+                                                        <td class="slds-truncate" style="text-align:center;">
+                                                            <apex:commandLink value="{!activity.What.name}" action="{!updateTaskLink}" >
+                                                                <apex:param name="activityId" value="{!activity.id}"/>
+                                                            </apex:commandLink>
+                                                        </td>
+
+                                                        <td class="slds-truncate" style="text-align:center;">
+                                                            <apex:outputText value="{! activity.Description }" styleClass="slds-truncate" style="display: block;" />
+                                                        </td>
+                                                        <td class="slds-truncate" style="text-align:center;">
+                                                            <apex:outputField value="{! activity.ActivityDate }" styleClass="slds-truncate" style="display: block;" />
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputPanel>
+                                </apex:form>
+
+                                <apex:outputPanel rendered="{!lstStatusInteger.size == 0}">
+                                    <div style="font-family: Arial, Helvetica, sans-serif; font-size:13px;">
+                                        <h1 class="h0">{!$Label.AAZ_HomePAge_011}</h1>
+                                    </div>
+                                </apex:outputPanel>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sección de Anuncios Importantes -->                    
+                    <div class="slds-col slds-size--1-of-2 slds-m-horizontal--small">
+                        <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$LAbel.AAZ_HomePAge_012}</h3>
+                        <div class="slds-box slds-m-top--x-small" style="height:270px;">
+                            <div class="slds-scrollable" style="height:240px; text-align:center;">
+                                <apex:outputPanel rendered="{!$Profile.Name == 'Supervisor'}" >
+                                    <button class="slds-button slds-button--neutral slds-m-top--x-small" onclick="createNewPub();">{!$Label.AAZ_HomePAge_013}</button>
+                                </apex:outputPanel>
+                                <table style="table-layout: fixed; position: relative; top: -19px;">
+                                    <thead>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!lstNews}" var="iterator">
+                                            <tr>
+                                                <td>
+                                                    &nbsp;
+                                                </td>
+                                            </tr>
+                                            <tr style="padding-top: 5px; background-color: #af272f;">
+
+                                                <td style="text-align: left; color:#fff; font-family: Arial, Helvetica, sans-serif;" colspan="2">
+
+                                                    <span>
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{!$Label.AAZ_HomePAge_019}  &nbsp;
+                                                        <apex:outputField value="{!iterator.StarDate__c}"/>,
+                                                    </span>
+                                                    <span>
+                                                        &nbsp; <apex:outputField value="{!iterator.CreatedBy.Name}"/> {!$Label.AAZ_HomePAge_014}
+                                                    </span>
+                                                </td>
+                                            </tr>                      
+                                            <tr style="padding-top: 5px;">
+                                                <td style=" background-color: white; color:#75787b; font-weight: bold;" class="slds-page-header">
+                                                    <span style="font-size: 10px;">
+                                                        {!$LAbel.AAZ_HomePAge_015} &nbsp;
+                                                        <apex:outputField value="{!iterator.Name}"/>
+                                                    </span>
+                                                    
+                                                    <br/>
+                                                    <span style="font-size: 12px;">
+                                                        {!$LAbel.AAZ_HomePAge_016} &nbsp;
+                                                        <apex:outputField value="{!iterator.Message__c}"/>
+                                                    </span>
+                                                </td>
+
+                                                <td style=" background-color: white; color:#75787b; font-weight: bold;" class="slds-page-header">
+                                                    <span class="span1" style="font-size: 12px; color: {!if(iterator.Priority__c=='Media','#FFCC00',if(iterator.Priority__c=='Alta','#FF0000','#0000FF'))};display: {!if(iterator.Priority__c==null,'none','inline')};top: -64px; position: relative;">
+                                                        {!$LAbel.AAZ_HomePAge_017} &nbsp;
+                                                        <apex:outputField value="{!iterator.Priority__c}"/>
+                                                    </span>
+                                                    
+                                                    <br/>
+                                                    <span style="font-size: 12px;     position: relative; top: -64px;">
+                                                        {!$LAbel.AAZ_HomePAge_018} &nbsp;
+                                                        <apex:outputField value="{!iterator.TimeActive__c}"/>
+                                                    </span>
+                                                    <br/>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                
+                // Crear una nueva tarea
+                function createNewTask() {
+                    var url = '/a07/e?retURL=/a07/o';
+                    sforce.console.openPrimaryTab(null, url, true, 'Nueva Tarea');
+                }
+
+                // Crear una nuevo anuncio
+                function createNewPub() {
+                    //var url = '/a06/e?retURL=/a06/o';
+                    var url = URLFOR($Action.News__c.New);
+                    sforce.console.openPrimaryTab(null, url, true, 'Nueva Anuncio');
+                }
+
+                function openURL(url,urlLabel){
+                    var url = '/'+url;
+                    var urlName = urlLabel;
+                    sforce.console.openPrimaryTab(null,url,true,urlName)
+                }
+
+            </script>
+        </body>
+    </html>
+</apex:page>

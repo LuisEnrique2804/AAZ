@@ -1,0 +1,50 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria 
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo refrescar la subficha que 
+    se tiene abierta 
+     
+    Cambios (Versiones)     
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción     
+    *****   *************  *****************************    *********************************   
+     0.1     22-07-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     22-07-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     25-07-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+     1.1     09-08-2017    Luis Enrique Garcia Sanabria     Ajustes
+*********************************************************************************************/-->
+<apex:page showHeader="true" sidebar="true">
+	<html>
+			<head>
+					<apex:includeScript value="/support/console/39.0/integration.js"/>
+					<meta charset="UTF-8"/>
+					<script type="text/javascript">
+						
+						window.onload = start;
+
+						var currentTabId;
+
+						function start(){
+							sforce.console.getEnclosingTabId(executeProcess);
+						}
+
+						var executeProcess = function executeProcess(result){
+							currentTabId = result.id;
+							sforce.console.closeTab('{!$CurrentPage.parameters.previousSubTabId}',openNewSubTab);
+						};
+
+						var openNewSubTab = function openNewSubTab(result){
+				            sforce.console.openSubtab('{!$CurrentPage.parameters.primaryTabId}','{!$CurrentPage.parameters.nextSubTabURL}', true, '{!$CurrentPage.parameters.newSubTabName}',null,closepreviousSubTab);
+				        };
+
+				        var closepreviousSubTab = function closepreviousSubTab(result){
+				            sforce.console.closeTab(currentTabId);
+				        };
+
+					</script>
+			</head>
+			<body>
+			</body>
+	</html>	
+</apex:page>

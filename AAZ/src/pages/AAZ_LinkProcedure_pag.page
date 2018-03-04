@@ -1,0 +1,14 @@
+<apex:page standardController="Task">
+
+ <apex:includeScript value="/support/console/42.0/integration.js"/>
+ <script type="text/javascript">
+        function openPrimaryTab() {
+            sforce.console.openPrimaryTab(undefined, 
+            '/{!Task.WhatId}', true, 'Cargando');
+            console.log('/{!Task.WhatId}');
+        }
+  </script>
+    {!$Label.LinkProcedure}
+   <A HREF="#" onClick="openPrimaryTab();return false">{!Task.What.Name}</A> 
+
+</apex:page>

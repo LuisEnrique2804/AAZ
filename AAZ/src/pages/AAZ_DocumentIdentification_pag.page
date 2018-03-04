@@ -1,0 +1,578 @@
+<!--Observaciones René "Agregar encabezado"-->
+<!--Observaciones René "Agregar etiquetas y mensajes de usuario como etiquetas personalizadas"-->
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo Rodríguez
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar los datos del trabajador para poder
+validarlos con los documentos entregados, en ella se cargan las siguientes imágenes: INE Frontal,
+INE Trasera y Comprobante de domicilio.
+Ademas cerca de las imagenes hay un icono para poder ingresar los motivos de rechazo de cada una mediante
+un multiselect que guarda los motivos en el objeto de ReasonRejection.
+Tambien se muestran iconos para poder manipularlas ya sea acercarlas, alejarlas y rotarlas. Tambien se
+pueden manipular por el ratón:
+Un click y sosteniendolo se pueden arrastrar, doble click izquierdo acercarlos, click derecho rotarla y
+dejando apretado el boton derecho por 2 segundos vuelve a su tamaño normal.
+
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Samuel Galindo         Creación
+0.2     13-07-2017    Samuel Galindo         Construcción
+0.9     03-08-2017    Samuel Galindo         Construcción
+1.0     09-08-2017    Samuel Galindo         Finalización y documentación
+1.1     11-08-2017    Samuel Galindo         Ajustes
+*******************************************************************************-->
+
+<apex:page standardController="Case" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" extensions="AAZ_DocumentIdentification_ctr">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+            <apex:includeScript value="/support/console/40.0/integration.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/panzoom.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQueryRotateCompressed.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jqueryeasingmin.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/longclick.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/manipulacionimagen.js') }"/>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+            <apex:slds />
+            <style>
+                .select2-results{
+                    font-size:12px;
+                    color: #54698d;
+                    font-family: "Salesforce Sans",Arial,sans-serif;
+                }
+                .select2-selection{
+                    font-size:12px;
+                    background-color: #F00;
+                    color: #000;
+                    font-family: "Salesforce Sans",Arial,sans-serif;
+                }
+            </style>
+
+            <script type="text/javascript">
+                function selectedFile(param, param2,urlLink){
+                    jQuery('[id$=HiddenField5]').val(param);
+                    jQuery('[id$=HiddenField2]').val(param2);
+                    console.log('urlLink '+urlLink);
+                    // Construct the a element
+                    var link = document.createElement("a");
+                    link.download = 'Archivo';
+                    link.target = "_blank";
+
+                    // Construct the uri
+                    link.href = urlLink;
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Cleanup the DOM
+                    document.body.removeChild(link);
+                    delete link;
+                    //passController();
+                }
+
+                jQuery.noConflict();
+                jQuery(document).ready(function() {
+
+                    var objDocumentId = JSON.parse('{!lstDocumentTypeId}');
+
+                    for (var i = 1; i <= $('[id$="total"]').val(); i++) {
+                        iniciaZoom('documentV'+i);
+                        //ratonZoom('documentV'+i, 'documentclassV'+i);
+                    }
+
+                    jQuery('.selectpicker1').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker1').next('.select2').mouseenter(function() {
+                        jQuery('.selectpicker1').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.selectpicker1').select2('close');
+                        }
+                    });
+
+                    jQuery('.selectpicker1').change(function(){
+                        jQuery('[id$=HiddenField]').val(1);
+                        jQuery('[id$=HiddenField1]').val($('.selectpicker1').val());
+                        console.log('1');
+                        executeRejection();
+                    });
+
+                    jQuery('.selectpicker2').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker2').next('.select2').mouseenter(function() {
+                        jQuery('.selectpicker2').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.selectpicker2').select2('close');
+                        }
+                    });
+
+                    jQuery('.selectpicker2').change(function(){
+                        jQuery('[id$=HiddenField]').val(2);
+                        jQuery('[id$=HiddenField1]').val($('.selectpicker2').val());
+                        console.log('2');
+                        executeRejection();
+                    });
+
+                    jQuery('.selectpicker3').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker3').next('.select2').mouseenter(function() {
+                        jQuery('.selectpicker3').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.selectpicker3').select2('close');
+                        }
+                    });
+
+                    jQuery('.selectpicker3').change(function(){
+                        jQuery('[id$=HiddenField]').val(3);
+                        jQuery('[id$=HiddenField1]').val($('.selectpicker3').val());
+                        console.log('3');
+                        executeRejection();
+                    });
+
+                    jQuery('.comprobante1').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.comprobante1').next('.select2').mouseenter(function() {
+                        jQuery('.comprobante1').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.comprobante1').select2('close');
+                        }
+                    });
+
+                    jQuery('.comprobante1').change(function(){
+                        jQuery('[id$=HiddenField]').val(1);
+                        jQuery('[id$=HiddenField1]').val($('.comprobante1').val());
+                        console.log('4');
+                        executeRejection();
+                    });
+
+                    jQuery('.comprobante2').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.comprobante2').next('.select2').mouseenter(function() {
+                        jQuery('.comprobante2').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.comprobante2').select2('close');
+                        }
+                    });
+
+                    jQuery('.comprobante2').change(function(){
+                        jQuery('[id$=HiddenField]').val(2);
+                        jQuery('[id$=HiddenField1]').val($('.comprobante2').val());
+                        console.log('5');
+                        executeRejection();
+                    });
+
+
+                    jQuery('.comprobante3').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.comprobante3').next('.select2').mouseenter(function() {
+                        jQuery('.comprobante3').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.comprobante3').select2('close');
+                        }
+                    });
+
+                    jQuery('.comprobante3').change(function(){
+                        jQuery('[id$=HiddenField]').val(3);
+                        jQuery('[id$=HiddenField1]').val($('.comprobante3').val());
+                        executeRejection();
+                    });
+                });
+
+                function ShowRejections(number) {
+                    if( $('.center'+number).is(":visible") ){
+                        $('.warning'+number).show();
+                        $('.center'+number).hide();
+                    }else{
+                        $('.warning'+number).hide();
+                        $('.center'+number).show();
+                    }
+                }
+
+                function startRefreshProcess(rowNum){
+                    primaryTabId = '';
+                    currentSubTabId = '';
+                    currentOrder = rowNum;
+                    console.log('1');
+                    sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                }
+
+                var redirectProcess = function redirectProcess(result){
+                    if(result.success){
+                        console.log('2');
+                        currentSubTabId = result.id;
+                        var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+                        var newSubTabName = '{!caseInstance.CaseNumber}' ;
+                        var currentTabId = result.id;
+                        var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                        sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                    }
+                    console.log('3');
+                };
+            </script>
+        </head>
+        <body class="slds-scope">
+            <apex:form >
+                <apex:actionFunction name="passController" action="{!downloadFile}" reRender="thePanel2" oncomplete="getBase64Files()" status="processing"/>
+                <apex:outputPanel id="thePanel2">
+                    <script type="text/javascript">
+                    function getBase64Files() {
+                        var respObj = JSON.parse('{!strDigitalizationFile}');
+                        var rows = respObj['data'];
+                        var link = document.createElement('a');
+                        var url = 'data:image/jpg;base64,'+rows[0]['Body'];
+                        link.href = url;
+                        link.download = rows[0]['Name']+'.jpg';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(function(){
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                        }, 100);
+                    }
+                    </script>
+                    <apex:inputHidden value="{!strDigitalizationNumber}" id="HiddenField5"/>
+                    <apex:inputHidden value="{!strDigitalizationFile}" id="HiddenField6"/>
+                    <apex:inputHidden value="{!strCaseId}" id="HiddenField2"/>
+                    <apex:inputHidden value="{!strDigitalDocument}" id="HiddenField3"/>
+                    <apex:inputHidden value="{!strDocumentURL}" id="HiddenField4"/>
+                </apex:outputPanel>
+                <apex:actionFunction name="executeRejection" action="{!saveRejections}" status="processing" oncomplete="startRefreshProcess('1');" />
+
+                <apex:outputPanel id="errormsg" rendered="{!blnShowMessageError}">
+                    <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error">
+                        <h2>{!strMessageError}</h2>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+
+                <apex:outputPanel id="thePanel">
+                    <apex:inputHidden value="{!intCurrentIndex}" id="HiddenField"/>
+                    <apex:inputHidden value="{!strListValues}" id="HiddenField1"/>
+                </apex:outputPanel>
+
+                <apex:actionStatus id="processing">
+                    <apex:facet name="start">
+                        <div class="slds-spinner_container slds-is-fixed">
+                            <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                <span class="slds-assistive-text">Processing</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionStatus>
+
+                <apex:pageBlock rendered="{! IF(intCountResults>0, true, false) }">
+                    <apex:inputHidden value="{! intCountResults }" id="total"/>
+                    <apex:variable value="{!1}" var="rowNum"/>
+                    <apex:repeat value="{!lstDocumentData}" var="data" rendered="{!rowNum < 4}">
+                        <apex:pageBlock rendered="{!IF(data.DocumentTypeId__c!='2', true, false)}">
+                            <div style="display: block; position: relative;" class="slds-m-bottom_small">
+                                <div id="documentV{!rowNum}">
+                                    <apex:image value="{!data.FileURL__c}" styleClass="documentclassV{!rowNum}" width="100%" height="100%" style="z-index: -1;"/>
+                                </div>
+
+                                <table style="position:absolute;bottom:8px;left:12px;">
+                                    <tr>
+                                        <td>
+                                            <div class="slds-button-group" role="group">
+                                                <apex:outputPanel rendered="{! data.page__c = 1.0 }" layout="none">
+                                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="ShowRejections({!rowNum});" title="Motivos de rechazo">
+                                                        <span class="slds-text-not-selected">
+                                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/action-sprite/svg/symbols.svg#reject')}" />
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                </apex:outputPanel>
+
+                                                <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }','{! data.FileURL__c }'); return false;" title="Descargar">
+                                                    <span class="slds-text-not-selected">
+                                                        <svg class="slds-button__icon" aria-hidden="true">
+                                                            <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <div class="center{!rowNum}" style="display:none; position: absolute; bottom: 32px; left: 0; width: 50%">
+                                            {!rowNum}
+                                                <!--<input type="button"  value="Cerrar" class="slds-button" onclick="ShowRejections({!rowNum}); startRefreshProcess({! rowNum });"  style="font-size:12px"/>-->
+                                                <apex:selectList value="{! mapRejection[rowNum]}" multiselect="false" styleClass="selectpicker{!rowNum}">
+                                                    <apex:selectOptions value="{! mapRejectionsReason[data.DocumentTypeId__c] }"/>
+                                                </apex:selectList><br/>
+
+                                                <script type="text/javascript">
+                                                function startRefreshProcess(rowNum){
+                                                    primaryTabId = '';
+                                                    currentSubTabId = '';
+                                                    currentOrder = rowNum;
+                                                    console.log('1');
+                                                    sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                                                }
+                                                var redirectProcess = function redirectProcess(result){
+                                                    if(result.success){
+                                                        console.log('2');
+                                                        currentSubTabId = result.id;
+                                                        var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+                                                        var newSubTabName = '{!caseInstance.CaseNumber}' ;
+                                                        var currentTabId = result.id;
+                                                        var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                                        sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                                    }
+                                                    console.log('3');
+                                                };
+                                                </script>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <!--<table style="position:absolute; bottom:8px; right:22%; width:19%;">
+<tr>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="30px" onclick="rotacion('documentclassV{!rowNum}')"/>
+</td>
+</tr>
+</table>-->
+                                <!-- Zoom y Rotar -->
+                                <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: absolute; bottom: 8px; right: 12px; z-index: 1000;">
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </apex:pageBlock>
+                        <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                    </apex:repeat>
+
+                    <apex:variable value="{!1}" var="rowNum"/>
+                    <apex:repeat value="{!lstDocumentData}" var="data" rendered="{!rowNum < 4}">
+                        <apex:pageBlock rendered="{!IF(data.DocumentTypeId__c=='2', true, false)}">
+                            <div style="display: block; position: relative;" class="slds-m-bottom_small">
+                                <div id="documentV{!rowNum}">
+                                    <apex:image value="{!data.FileURL__c}" styleClass="documentclassV{!rowNum}" width="100%" height="100%" style="z-index: -1;"/>
+                                </div>
+                                <apex:outputPanel rendered="{! data.page__c == 1.0 }">
+                                    <table style="position:absolute;bottom:8px;left:12px;cursor:pointer;">
+                                        <tr>
+                                            <td>
+                                                <!--<apex:image value="{!URLFOR($Resource.IconosImagenes, 'warning.png')}" styleClass="warning{!rowNum}" width="20px" style="position:absolute;bottom:8px;left:16px;cursor:pointer;" onclick="ShowRejections({!rowNum})"/>
+    <a href="#">
+    <apex:image value="{!URLFOR($Resource.IconosImagenes, 'descargar.png')}" width="10" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }'); return false;" style="position:relative;bottom:11px;left:50px;cursor:pointer"/>
+    </a>-->
+                                                <div class="slds-button-group" role="group">
+                                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="ShowRejections({!rowNum});" title="Motivos de rechazo">
+                                                        <span class="slds-text-not-selected">
+                                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/action-sprite/svg/symbols.svg#reject')}" />
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }','{!data.FileURL__c}'); return false;" title="Descargar">
+                                                        <span class="slds-text-not-selected">
+                                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div class="center{!rowNum}" style="display:none; position:absolute; bottom:32px; left:0px; width:37%; background:white;">
+                                                    <!--<input type="button"  value="Cerrar" class="slds-button" onclick="ShowRejections({!rowNum}); startRefreshProcess({! rowNum });"  style="font-size:12px"/>-->
+                                                    <apex:selectList value="{! mapRejection[rowNum]}" multiselect="false" styleClass="selectpicker{!rowNum}">
+                                                        <apex:selectOptions value="{! mapRejectionsReason[data.DocumentTypeId__c] }"/>
+                                                    </apex:selectList><br/>
+                                                    <script type="text/javascript">
+                                                    function startRefreshProcess(rowNum){
+                                                        primaryTabId = '';
+                                                        currentSubTabId = '';
+                                                        currentOrder = rowNum;
+                                                        console.log('1');
+                                                        sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                                                    }
+                                                    var redirectProcess = function redirectProcess(result){
+                                                        if(result.success){
+                                                            console.log('2');
+                                                            currentSubTabId = result.id;
+                                                            var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+                                                            var newSubTabName = '{!caseInstance.CaseNumber}' ;
+                                                            var currentTabId = result.id;
+                                                            var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                                            sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                                        }
+                                                        console.log('3');
+                                                    };
+                                                    </script>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+
+                                <!--<table style="position:absolute; bottom:8px; right:22%; width:19%;">
+<tr>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="30px" onclick="rotacion('documentclassV{!rowNum}')"/>
+</td>
+</tr>
+</table>-->
+                                <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: absolute; bottom: 8px; right: 16px; z-index: 1000;">
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar">
+                                        <span class="slds-text-not-selected">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </apex:pageBlock>
+                        <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                    </apex:repeat>
+                    <!-- <apex:variable value="{!0}" var="rowNum"/>
+<apex:repeat value="{!lstDocumentData}" var="data" rendered="{!rowNum < 4}">
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'warning.png')}" styleClass="warning{!rowNum}" width="20px" style="position:absolute;bottom:8px;left:16px;cursor:pointer; z-index:1;" onclick="ShowRejections({!rowNum})" rendered="{!IF(data.DocumentTypeId__c=='2', true, false)}"/>
+<apex:outputPanel layout="block" styleClass="center{!rowNum}" style="display:none; position:absolute; bottom:8px; left:16px; width:37%; background:white; z-index:1;" rendered="{!IF(data.DocumentTypeId__c=='2', true, false)}">
+<input type="button"  value="Cerrar" class="slds-button" onclick="ShowRejections({!rowNum}); startRefreshProcess({! rowNum });" style="font-size:12px"/>
+<apex:selectList value="{!mapRejection[rowNum]}" multiselect="true" styleClass="comprobante{!rowNum}">
+<apex:selectOptions value="{! mapRejectionsReason[data.DocumentTypeId__c] }"/>
+</apex:selectList><br/>
+<script type="text/javascript">
+function startRefreshProcess(rowNum){
+    primaryTabId = '';
+    currentSubTabId = '';
+    currentOrder = rowNum;
+    console.log('1');
+    sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+}
+var redirectProcess = function redirectProcess(result){
+    if(result.success){
+        console.log('2');
+        currentSubTabId = result.id;
+        var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+        var newSubTabName = '{!caseInstance.CaseNumber}' ;
+        var currentTabId = result.id;
+        var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+        sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+    }
+    console.log('3');
+};
+</script>
+</apex:outputPanel>
+
+<div id="documentV{!rowNum}" style="display: {!IF(data.DocumentTypeId__c=='2', '', 'none')}">
+<apex:image value="{!data.FileURL__c}" styleClass="documentclassV{!rowNum}" width="100%" height="100%" style="z-index: -1;"/>
+</div>
+<table style="position:absolute; bottom:8px; right:22%; width:19%;display: {!IF(data.DocumentTypeId__c=='2', '', 'none')}">
+<tr>
+<td>
+<a href="#">
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'descargar.png')}" width="35px" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }'); return false;" style="position:relative;bottom:1px;left:-19px;cursor:pointer"/>
+</a>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px"/>
+</td>
+<td>
+<apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="30px" onclick="rotacion('documentclassV{!rowNum}')"/>
+</td>
+</tr>
+</table>
+<apex:variable var="rowNum" value="{!rowNum + 1}"/>
+</apex:repeat> -->
+                </apex:pageBlock>
+
+                <apex:pageBlock rendered="{! IF(intCountResults==0, true, false)}">
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                        <h2>{!$Label.AAZ_DocumentIdentification_001}</h2>
+                    </div>
+                </apex:pageBlock>
+
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

@@ -1,0 +1,152 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Rene Ayala Medina
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo mostrar la informaciondel
+    Agente Promotor(Contacto), y dos botones, que son excluyentes entre si, que llaman al servicio de bloquo o desbloquo del
+    agente dependiendo del estatus previos que se tenga.
+
+    Cambios (Versiones)
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción
+    *****   *************  *****************************    *********************************
+     0.1     06-07-2017    Rene Ayala Medina                Creacion
+     0.2     06-07-2017    Rene Ayala Medina                Construcción
+     1.0     06-07-2017    Rene Ayala Medina                Finalización y documentación
+     1.1     01-08-2017    Luis Enrique Garcia Sanabria     Ajustes
+*********************************************************************************************/-->
+
+<apex:page standardController="Case" sidebar="false" showHeader="false" extensions="AAZ_AgentDetailsFromProcedure_ctr">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+            <apex:includeScript value="/support/console/39.0/integration.js"/>
+            <apex:slds />
+            <meta charset="utf-8"/>
+        </head>
+        <body class="slds-scope" style="width:100%;" id="lockUnlockAgent">
+            <apex:form id="lockAgent"  rendered="{!isItValidToStart}">
+                <br/>
+                <div class="slds-box" style="background-color:white; margin-left:5px; margin-right:5px;">
+                    <apex:outputPanel rendered="{! $Profile.Name == 'Gerente/Director' || $Profile.Name == 'Supervisor' || $Profile.Name =='Consultor' || $Profile.Name =='Administrador del sistema'}">
+                        <div class="slds-p-horizontal_small slds-size_1-of-3 slds-align_absolute-center">
+                            <div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element">
+                                        <div class="slds-button-group" role="group">
+                                            <apex:commandButton disabled="{!relatedAgent.isLock__c}" style="font-size: 12px; background-size: 9px;" styleClass="slds-button slds-button--neutral" value="Bloquear" oncomplete="showDialog();" />
+<!--                                             <apex:commandButton disabled="{!NOT(relatedAgent.isLock__c)}" style="font-size: 9px; background-size: 9px;" styleClass="slds-button slds-button--neutral" value="Desbloquear" oncomplete="showDialog();" /> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <br/>
+                    <apex:repeat value="{!FieldSetFields}" var="field">
+                        <tr>
+                            <td style="text-align: center;">
+                                <div class="slds-form-element">
+                                    <label style="font-size: 12px; color: black;" class="slds-form-element__label">{!field.label}</label>
+                                    <span style="font-size: 12px; color: black; font-weight: bold;">
+                                        <apex:outputField value="{!caseInstance[field]}"/>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                </div>
+            </apex:form>
+            <apex:form id="afprocess">
+                <apex:actionFunction action="{!LockUnlockAP2}" name="LockUnlockAP2" oncomplete="save()"/>
+                <script type="text/javascript">
+                    /*function startRefreshProcess(){
+                        alert('Entro');
+                        sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                    }
+                    var redirectProcess = function redirectProcess(result){
+                        alert('Entro 2');
+                        var newURL = encodeURI('/{!strProcedureId}');
+                        var newTabName = 'Tramite'
+                        var currentTabId = result.id;
+                        var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newURL+'&newTabName='+newTabName+'&previousTabId='+currentTabId;
+                        sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                    }; */
+                    /*function startRefreshProcess(){
+                        startUnlockTabsProcess();
+                        alert('Entro');
+                        sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                    }
+                    var redirectProcess = function redirectProcess(result){
+                        alert('Entro2');
+                    };*/
+                </script>
+            </apex:form>
+            <apex:form rendered="{!NOT(isItValidToStart)}">
+                <div class="slds-notify_container" style="position:relative;">
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_warning" role="alert">
+                        El trámite referido no tiene asociado un Agente Promotor.
+                    </div>
+                </div>
+            </apex:form>
+            <apex:form >
+                <div id="modalDialog" class="slds-hide">
+                    <div role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <div class="slds-modal__header slds-modal__header slds-modal__header--empty">
+                                <button class="slds-button slds-modal__close slds-button--icon-inverse" title="Close" onclick="hideDialog();">
+                                    <svg class="slds-button__icon slds-button__icon--large" aria-hidden="true">
+                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                    </svg>
+                                    <span class="slds-assistive-text">Close</span>
+                                </button>
+                                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Motivo de bloqueo/Desbloqueo</h2>
+                            </div>
+                            <div class="slds-modal__content slds-p-around--medium">
+                                <div class="slds-form--stacked">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="Nombre">Motivo:</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField id="text-input-4" value="{!relatedAgent.BlockReasons__c}" styleClass="slds-input"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-modal__footer">
+                                <button class="slds-button slds-button--neutral" onclick="hideDialog();">Cancelar</button>
+                                <apex:commandButton status="processing" styleClass="slds-button slds-button--brand" value="Guardar" oncomplete="LockUnlockAP2();" reRender="main"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-backdrop slds-backdrop--open"></div>
+                </div>
+            </apex:form>
+            <script type="text/javascript">
+                function showDialog(){
+                    var dialog = document.getElementById('modalDialog');
+                    dialog.className = "slds-show";
+                }
+                function hideDialog(){
+                    var dialog = document.getElementById('modalDialog');
+                    dialog.className = "slds-hide";
+                }
+                function save(){
+                    hideDialog();
+                    startRefreshProcess();
+                }
+                function startRefreshProcess(){
+                    console.log('Entro');
+                    sforce.console.getEnclosingPrimaryTabId(redirectProcedure);
+                }
+                var redirectProcedure = function (result){
+                    console.log('Entro2');
+                    var newURL = encodeURI('/{!strProcedureId}');
+                    var newTabName = 'Tramite'
+                    var currentTabId = result.id;
+                    var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newURL+'&newTabName='+newTabName+'&previousTabId='+currentTabId;
+                    sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                };
+            </script>
+        </body>
+    </html>
+</apex:page>

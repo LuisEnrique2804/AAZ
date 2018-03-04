@@ -1,0 +1,1035 @@
+<!--Observaciones René "Agregar encabezado"-->
+<!--Observaciones René "Agregar etiquetas y mensajes de usuario como etiquetas personalizadas"-->
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Luis Enrique Garcia
+Autor: Samuel Galindo Rodríguez
+Proyecto: Afore Azteca
+Descripción: Esta página de Visualforce tiene como objetivo mostrar los datos del trabajador para poder
+validarlos con los documentos entregados, en ella se cargan las siguientes imágenes: Foto del trabajador,
+foto de la firma del trabajador y foto de la firma del agente promotor.
+Las cuales se pueden descargar de manera individual.
+Ademas cerca de las imagenes hay un icono para poder ingresar los motivos de rechazo de cada una mediante
+un multiselect que guarda los motivos en el objeto de ReasonRejection.
+Tambien se muestra un icono de un teléfono el cual indica si ya se realizo la llamada (verde) o no se ha
+realizado la llamada (rojo).
+Además aparecen dos tablas creadas en Ajax Toolkit Salesforce las cuales son para los referenciados y
+beneficiarios de ese trámite, al dar click en los nombres de cada tabla te abre una pestaña con el
+detalle de éste.
+
+Cambios (Versiones)
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     13-07-2017    Luis Enrique           Creación
+0.2     13-07-2017    Luis Enrique           Construcción
+0.9     03-08-2017    Samuel Galindo         Construcción
+1.0     09-08-2017    Samuel Galindo         Finalización y documentación
+1.1     11-08-2017    Samuel Galindo         Ajustes
+*******************************************************************************-->
+<apex:page standardController="Case" sidebar="false" showHeader="false"
+    extensions="AAZ_AccountDetailsFromProcedure_ctr">
+
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:includeScript value="/support/console/40.0/integration.js"/>
+            <apex:includeScript value="/soap/ajax/40.0/connection.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.JSZIP)}"/>
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/moment.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/autosize.min.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/panzoom.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQueryRotateCompressed.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jqueryeasingmin.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/longclick.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/manipulacionimagen.js') }"/>
+            <apex:includeScript value="{!URLFOR($Resource.TiffHandlerJS)}"/>
+
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+            <apex:slds />
+            <meta charset="utf-8"/>
+            <style>
+                .select2-results{
+                    color: #100;
+                    font-size:12px;
+                }
+                .select2-selection{
+                    font-size:12px;
+                }
+            </style>
+
+            <script type="text/javascript">
+                sforce.connection.sessionId='{!GETSESSIONID()}';
+                function setupPage() {
+                    var querys = {
+                        "idBeneficiario" : "SELECT Id FROM RecordType WHERE SobjectType='People__c' AND DeveloperName='Beneficiary'",
+                        "CURP" : "SELECT CURP__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id'AND ParentIdBeneficiary__c ='{!strCaseIdentifier}'",
+                        "idReferencia" : "SELECT Id FROM RecordType WHERE SobjectType='People__c' AND DeveloperName='Reference'",
+                        "Beneficiarios" : "SELECT Id, Name__c, FatherLastName__c, MaternalLastName__c, CURP__c, Relationship__c, Percentage__c, Bank__c, Bank_Account__c, CLABE__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id' AND ParentIdBeneficiary__c ='{!strCaseIdentifier}'",
+                        "Referencias" : "SELECT Id, Name__c, FatherLastName__c, MaternalLastName__c, Relationship__c, Percentage__c, Fx_Relationship__c, Phone__c FROM People__c WHERE RecordTypeId='replace_id' AND ParentIdReference__c='{!strCaseIdentifier}'",
+                        "BeneficiariosCURP" : "SELECT Id, Name__c, FatherLastName__c, isUpdateData__c, MaternalLastName__c, CURP__c, Relationship__c, Percentage__c, Bank__c, Bank_Account__c, CLABE__c, Fx_Relationship__c, Phone__c FROM People__c WHERE CURP__c='replace_curp' AND RecordTypeId='replace_id' AND ParentIdBeneficiary__c='{!strCaseIdentifier}'"
+                    };
+
+                    var idbeneficiario = 0;
+                    var idreferencia = 0;
+                    var beneficiarios = [];
+                    var referencias = [];
+                    var curp=null;
+
+                    var state = {
+                        beneficiarios : document.getElementById("beneficiarios"),
+                        referencias : document.getElementById("referencias"),
+                        startTime : new Date().getTime()
+                    };
+
+                    var consulta = sforce.connection.query(querys['idBeneficiario'], {
+                        onSuccess : primeraConsulta,
+                        onFailure : failure,
+                    });
+
+                    function primeraConsulta(result) {
+                        var resultado = result.getArray("records");
+                        idbeneficiario = resultado[0]['Id'];
+                        //alert('el id:'+idbeneficiario);
+                        var query = querys['CURP'];
+                        query = query.replace('replace_id', idbeneficiario);
+                        //alert('el query:'+query);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : segundaConsulta,
+                            onFailure : failure
+                        });
+                    }
+
+                    function segundaConsulta(result) {
+                        var resultado = result.getArray("records");
+                        curp = resultado[0]['CURP__c'];
+                        //alert('el curp:'+curp);
+                        var consulta = sforce.connection.query(querys['idReferencia'], {
+                            onSuccess : terceraConsulta,
+                            onFailure : failure
+                        });
+                    }
+
+                    function terceraConsulta(result) {
+                        var resultado = result.getArray("records");
+                        idreferencia = resultado[0]['Id'];
+                        var query = querys['BeneficiariosCURP'];
+                        query = query.replace('replace_curp', curp);
+                        query = query.replace('replace_id', idbeneficiario);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : cuartaConsulta,
+                            onFailure : failure,
+                        });
+                    }
+
+                    function cuartaConsulta(result) {
+                        beneficiarios = result.getArray("records");
+                        var query = querys['Referencias'];
+                        query = query.replace('replace_id', idreferencia);
+                        var consulta = sforce.connection.query(query, {
+                            onSuccess : quintaConsulta,
+                            onFailure : failure,
+                            source    : state
+                        });
+                    }
+
+                    function quintaConsulta(result, source) {
+                        referencias = result.getArray("records");
+                        //source.beneficiarios.innerHTML = muestraBeneficiarios(beneficiarios);
+                        source.referencias.innerHTML = muestraReferencias(referencias);
+                        $('textarea').each(function(){
+                            autosize(this);
+                        });
+                    }
+
+                    function muestraReferencias(referencias) {
+                        var tabla = '';
+                        if (referencias.length > 0) {
+                            tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 12px;">';
+                            tabla += '<thead>';
+                            tabla += '<tr class="slds-text-title_caps" style="font-size: 12px;background: blue;color: white;">';
+                            tabla += '<th scope="col">';
+                            tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_001}';
+                            tabla += '</th>';
+                            tabla += '</thead>';
+                            tabla += '<tbody>';
+                            for (var i = 0; i < referencias.length; i++) {
+                                var data = referencias[i];
+                                tabla += '<tr>';
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Referencia&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Telefono :</span> <span style="font-weight: bold;">'+data.Phone__c+'</span></div>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                            }
+                            tabla += '</tbody>';
+                            tabla += '</table>';
+                        }
+                        return tabla;
+                    }
+
+                    function muestraBeneficiarios(beneficiaries) {
+                        var tabla = '';
+                        var orden =null;
+                        if (beneficiaries.length > 0) {
+                            tabla = '<table class="slds-table slds-table_bordered slds-table_cell-buffer" style="font-size: 12px;">';
+                            tabla += '<thead>';
+                            tabla += '<tr class="slds-text-title_caps" style="font-size: 12px;background: blue;color: white;">';
+                            tabla += '<th scope="col">';
+                            tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_008}';
+                            tabla += '</th>';
+                            if(beneficiaries.length > 1){
+                            tabla += '<th scope="col">';
+                            tabla +=  '{!$Label.AAZ_AccountDetailsFromProcedure_014}';
+                            tabla += '</th>';
+                            }
+                            tabla += '</thead>';
+                            tabla += '<tbody>';
+                            for (var i = 0; i < beneficiaries.length; i++) {
+                                var data = beneficiaries[i];
+                                if(i==0){
+                                orden=0;
+                                }
+                                if(i==0){
+                                tabla += '<tr>';
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+
+                                tabla += '</td>';
+                                orden=1;
+
+                                }
+                                else if(beneficiaries[1].isUpdateData__c=='true' && i==1) {
+
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                orden=0;
+                                } else if (beneficiaries[1].isUpdateData__c=='false' && i==1){
+                                    if (beneficiaries[i].isUpdateData__c=='true' && i>1){
+                                     tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                        }
+
+                                    }
+                                else if(beneficiaries[i].isUpdateData__c=='true' && i>1) {
+                                    if (beneficiaries[i-1].isUpdateData__c=='false'){
+                                        tabla += '<td>';
+                                		tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                		tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                		tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                    if ( data.Bank__c != null ) {
+                                      tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                    }
+                                    if( data.Bank_Account__c != null) {
+                                      tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                    }
+                                    if( data.CLABE__c != null ) {
+                                      tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                    }
+                                    tabla += '</td>';
+                                		tabla += '</tr>';
+                                		tabla += '</td>';
+                                		tabla += '</tr>';
+                                        }else {
+                                tabla += '<tr>';
+                                tabla += '<td>';
+                                tabla += '<div><span>'+'</span> </div>';
+                                tabla += '<div> <span>'+'</span></div>';
+                                tabla += '<div> <span>'+'</span></div>';
+                                tabla += '</td>';
+
+                                tabla += '<td>';
+                                tabla += '<div> <span>{!$Label.AAZ_AccountDetailsFromProcedure_002} : </span> <a href="#" onClick="TestOpenSubtab(&#39;'+data.Id+'&#39;,&#39;Beneficiarios&#39;); return false"><span style="font-weight: bold;">'+data.Name__c+' '+data.FatherLastName__c+' '+data.MaternalLastName__c+'</span></a></div>';
+                                tabla += '<div> <span> Parentesco :</span> <span style="font-weight: bold;">'+data.Fx_Relationship__c+'</span></div>';
+                                tabla += '<div> <span> Porcentaje :</span> <span style="font-weight: bold;">'+data.Percentage__c+'</span></div>';
+                                if ( data.Bank__c != null ) {
+                                  tabla += '<div> <span> Banco :</span> <span style="font-weight: bold;">'+data.Bank__c+'</span></div>';
+                                }
+                                if( data.Bank_Account__c != null) {
+                                  tabla += '<div> <span> Cuenta :</span> <span style="font-weight: bold;">'+data.Bank_Account__c+'</span></div>';
+                                }
+                                if( data.CLABE__c != null ) {
+                                  tabla += '<div> <span> Cuenta Clabe :</span> <span style="font-weight: bold;">'+data.CLABE__c+'</span></div>';
+                                }
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                tabla += '</td>';
+                                tabla += '</tr>';
+                                orden=0;
+                                }
+                                }
+                            }
+                            tabla += '</tbody>';
+                            tabla += '</table>';
+                        }
+                        return tabla;
+                    }
+
+                    function failure(error) {
+                        console.log("An error has occurred " + error);
+                    }
+                }
+
+                /**
+                * Función que llama la función para abrir el subtabulador
+                * @param String id Identificador del registro
+                * @return void
+                */
+                function TestOpenSubtab(id, tipo) {
+                    id_tab = id;
+                    tab_name = tipo;
+                    sforce.console.getEnclosingPrimaryTabId(openSubtab);
+                }
+
+                /**
+                * Función abrir el subtabulador
+                *
+                * @param String result Identificador del tabulador
+                *
+                * @return void
+                */
+                var openSubtab = function openSubtab(result) {
+                    var primaryTabId = result.id;
+                    sforce.console.openSubtab(primaryTabId , '/'+id_tab, true, tab_name, null);
+                };
+            </script>
+
+            <script type="text/javascript">
+                jQuery.noConflict();
+                jQuery(document).ready(function() {
+                    setupPage();
+
+                    iniciaZoom('documentV1');
+                    //ratonZoom('documentV1', 'documentclassV1');
+
+                    iniciaZoom('documentV2');
+                    //ratonZoom('documentV2', 'documentclassV2');
+
+                    iniciaZoom('documentV3');
+                    //ratonZoom('documentV3', 'documentclassV3');
+
+                    jQuery('.selectpicker1').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker1').next('.select2').mouseenter(function() {
+                            jQuery('.selectpicker1').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                            if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                                    jQuery('.selectpicker1').select2('close');
+                            }
+                    });
+
+                    jQuery('.selectpicker1').change(function(){
+                        executeRejection();
+                    });
+
+                    jQuery('.selectpicker2').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker2').next('.select2').mouseenter(function() {
+                        jQuery('.selectpicker2').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                            if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                                    jQuery('.selectpicker2').select2('close');
+                            }
+                    });
+
+                    jQuery('.selectpicker2').change(function(){
+                        executeRejection();
+                    });
+
+                    jQuery('.selectpicker3').select2(
+                        { width: '100%' }
+                    );
+
+                    $('.selectpicker3').next('.select2').mouseenter(function() {
+                        jQuery('.selectpicker3').select2('open');
+                    });
+
+                    $(document).on('mouseleave', '.select2-container', function(e) {
+                        if ($(e.toElement || e.relatedTarget).closest('.select2-container').length == 0) {
+                            jQuery('.selectpicker3').select2('close');
+                        }
+                    });
+
+                    jQuery('.selectpicker3').change(function(){
+                        executeRejection();
+                    });
+                });
+
+                function selectedFile(param, param2,urlLink){
+                    jQuery('[id$=HiddenField]').val(param);
+                    jQuery('[id$=HiddenField2]').val(param2);
+                    console.log(param+'  '+param2+'  '+urlLink);
+
+                    // Construct the a element
+                    var link = document.createElement("a");
+                    link.download = 'Archivo';
+                    link.target = "_blank";
+
+                    // Construct the uri
+                    link.href = urlLink;
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Cleanup the DOM
+                    document.body.removeChild(link);
+                    delete link;
+
+                    //passController();
+                }
+
+                function ShowRejections(number) {
+                    if( $('.center'+number).is(":visible") ){
+                        $('.warning'+number).show();
+                        $('.center'+number).hide();
+                        $('.rechazosfirmas'+number).css("width", 0);
+                    }else{
+                        $('.warning'+number).hide();
+                        $('.center'+number).show();
+                        $('.rechazosfirmas'+number).css("width", 160);
+                    }
+
+                }
+
+                function convierteTIFF() {
+                    var idDoc = jQuery('[id$=HiddenField3]').val();
+                    var urlDoc = jQuery('[id$=HiddenField4]').val();
+                    console.log(idDoc);
+                    console.log(urlDoc);
+                    var xhr = new XMLHttpRequest();
+                    xhr.responseType = 'arraybuffer';
+                    xhr.open('GET', urlDoc);
+                    xhr.onload = function (e) {
+                        var container = document.getElementById('doc'+idDoc);
+                        var tiff = new Tiff({buffer: xhr.response});
+                        var canvas = tiff.toCanvas();
+                        canvas.style.width  = '100%';
+                        canvas.style.height = '600px';
+                        container.append(canvas);
+                    };
+                    xhr.send();
+                }
+            </script>
+        </head>
+
+        <body class="slds-scope" style="width:100%;">
+            <apex:form rendered="{!isItValidToStart}" >
+
+                <apex:actionFunction name="passController" action="{!downloadFile}" reRender="thePanel" oncomplete="getBase64Files()" status="processing"/>
+                <apex:actionFunction name="executeRejection" action="{!saveRejections}" reRender="thePanel,errormsg" status="processing" oncomplete="startRefreshProcess()"/>
+                <apex:actionFunction name="muestraURL" action="{!getShowFileURL}" reRender="thePanel" oncomplete="convierteTIFF()"/>
+                <apex:outputPanel id="errormsg" rendered="{!blnShowMessageError}">
+                    <apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error">
+                        <h2>{!strMessageError}</h2>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+
+                <apex:outputPanel id="thePanel">
+                    <script type="text/javascript">
+                        function getBase64Files() {
+                            var respObj = JSON.parse('{!strDigitalizationFile}');
+                            var rows = respObj['data'];
+                            var link = document.createElement('a');
+                            var url = 'data:image/jpg;base64,'+rows[0]['Body'];
+                            link.href = url;
+                            link.download = rows[0]['Name']+'.jpg';
+                            document.body.appendChild(link);
+                            link.click();
+                            setTimeout(function(){
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                            }, 100);
+                        }
+                    function Urlink(link)
+                    {
+                      jQuery.fileDownload(link)
+                      .done(function () { alert('File download a success!'); })
+                      .fail(function () { alert('File download failed!'); });
+                    }
+                    </script>
+                    <apex:inputHidden value="{!strDigitalizationNumber}" id="HiddenField"/>
+                    <apex:inputHidden value="{!strDigitalizationFile}" id="HiddenField1"/>
+                    <apex:inputHidden value="{!strCaseId}" id="HiddenField2"/>
+                    <apex:inputHidden value="{!strDigitalDocument}" id="HiddenField3"/>
+                    <apex:inputHidden value="{!strDocumentURL}" id="HiddenField4"/>
+                </apex:outputPanel>
+                <br/>
+                <div class="slds-box" style="background-color:white; margin-left:5px; margin-right:5px;">
+                    <apex:outputPanel rendered="{! IF(intRelatedDocumentsAll!=0, true, false)}">
+                        <div class="slds-grid slds-wrap">
+                            <apex:actionStatus id="processing">
+                                <apex:facet name="start">
+                                    <div class="slds-spinner_container slds-is-fixed">
+                                        <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                            <span class="slds-assistive-text">Processing</span>
+                                            <div class="slds-spinner__dot-a"></div>
+                                            <div class="slds-spinner__dot-b"></div>
+                                        </div>
+                                    </div>
+                                </apex:facet>
+                            </apex:actionStatus>
+                            <apex:outputText value="Folio: {! strCIT2 }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel >
+                                    <apex:outputText value="{! strPrintsReq }" style="font-weight: bold; color:blue; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(strCIT!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Folio CIT: {! strCIT }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(strFolioCUS!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Folio CUS: {! strFolioCUS }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(DateCUSDate!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Fecha de vencimiento CIT: {! dateCUSDate }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strCaseType!=null, true, false)}">
+                                    <span>Tipo de servicio: </span>
+                                    <apex:outputText value="{! strCaseType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(AND(strCaseSubType!=null, caseInstance.RecordType.DeveloperName != 'totalRetreats' ), true, false)}">
+                                <!-- <apex:outputPanel rendered="{! IF(strCaseSubType!=null, true, false)}"> -->
+                                    <span>Subtipo de servicio: </span>
+                                    <apex:outputText value="{! strCaseSubType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strWithdrawtype!=null, true, false)}">
+                                    <span>Tipo Retiro: </span>
+                                    <apex:outputText value="{! strWithdrawtype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strIdSecuritytype!=null, true, false)}">
+                                    <span>Tipo Seguro: </span>
+                                    <apex:outputText value="{! strIdSecuritytype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strIdPensiontype!=null, true, false)}">
+                                    <span>Tipo Pensión: </span>
+                                    <apex:outputText value="{! strIdPensiontype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strRegimeType!=null, true, false)}">
+                                    <span>Tipo Regimen: </span>
+                                    <apex:outputText value="{! strRegimeType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strStatusCase!=null, true, false)}">
+                                    <span>Estatus del trámite: </span>
+                                    <apex:outputText value="{! strStatusCase }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+<!--                             <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(dTimeReviewDate!=null, true, false)}">
+                                    <span>Fecha de revisión </span>
+                                    <apex:outputText value="{! dTimeReviewDate }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div> -->
+                            <apex:variable value="{!1}" var="rowNum"/>
+                            <apex:inputHidden value="{! intCountResults }" id="total"/>
+                            <apex:repeat value="{!lstRelatedDocuments}" var="data">
+                                <!-- <apex:outputPanel rendered="{! IF(data.DocumentTypeId__c!=strDigitalizationTrabajador, true, false)}" styleClass="rechazosfirmas{!rowNum}"> -->
+                                <!-- Se deja quemado el valor de 10 Foto del trabajador para que sea el unico en el que muestre los mostivos de rechazo -->
+
+                                <apex:outputPanel rendered="{! IF(OR(data.DocumentTypeId__c='10',data.DocumentTypeId__c='400010'), true, false)}" styleClass="rechazosfirmas{!rowNum}">
+                                    <div class="center{!rowNum}" style="display:none; background:white">
+                                        <apex:selectList value="{!mapRejection[data.DocumentTypeId__c]}" multiselect="true" styleClass="selectpicker{!rowNum}">
+                                            <apex:selectOptions value="{! mapRejectionsReason[data.DocumentTypeId__c] }"/>
+                                        </apex:selectList><br/>
+                                    </div>
+                                </apex:outputPanel>
+                                <apex:outputPanel styleClass="slds-size_1-of-1" rendered="{! IF(data.DocumentTypeId__c==strDigitalizationTrabajador, true, false)}" style="text-align: center;">
+                                    <!-- Icono Teléfono -->
+                                    <div>
+                                        <apex:image rendered="{! IF(AND(Case.CallMade__c,OR(caseInstance.Type == strTypePhoceCase, caseInstance.Type == 'RECERTIFICACION')), true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="width: 10%;height: 10%;position: relative;left: 20%; bottom: -20px; margin: -5%; z-index: 1000;" styleClass="slds-align_absolute-center"/>
+                                        <apex:image rendered="{!
+                                        IF(AND(NOT(Case.CallMade__c),OR(caseInstance.Type == strTypePhoceCase, caseInstance.Type == 'RECERTIFICACION')), true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}" style="width:10%; height:10%;position: relative;left: 20%; bottom: -20px; margin: -5%; z-index: 1000;" styleClass="slds-align_absolute-center"/>
+                                    </div>
+
+                                    <div class="slds-truncate" title="{!$Label.AAZ_AccountDetailsFromProcedure_010}" align="center">
+                                        <!-- Rechazos -->
+
+                                        <!-- <img title="{!$Label.AAZ_AccountDetailsFromProcedure_011}" src="{!URLFOR($Resource.IconosImagenes, 'warning.png')}" class="warning{!rowNum}" onclick="ShowRejections({!rowNum});" width="10px" style="position:absolute;bottom:91px;left:138px;cursor:pointer" /> -->
+
+
+                                        <script type="text/javascript">
+                                            function startRefreshProcess()
+                                            {
+                                                primaryTabId = '';
+                                                currentSubTabId = '';
+                                                currentOrder = '1';
+                                                sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                                            }
+                                            var redirectProcess = function redirectProcess(result)
+                                            {
+                                                if(result.success){
+                                                    currentSubTabId = result.id;
+                                                    var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+                                                    var newSubTabName = '{!caseInstance.CaseNumber}' ;
+                                                    var currentTabId = result.id;
+                                                    var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                                    sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                                }
+                                            };
+                                        </script>
+
+                                        <!-- Descargar -->
+                                        <!--
+                                        <a href="#">
+                                            <apex:image value="{!URLFOR($Resource.IconosImagenes, 'descargar.png')}" width="10" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }'); return false;" style="position:absolute;bottom:74px;left:136px;cursor:pointer"/>
+                                        </a>
+                                        -->
+
+                                        <!-- Rotar -->  <!-- zoom -->
+                                        <!-- <apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="10" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar" style="position: absolute; bottom: 53px; left: 138px"/>
+
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px" style="position: absolute; bottom: 33px; left: 136px; width: 14px;"/>
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px" style="position: absolute; bottom: 15px; left: 136px; width: 14px;"/> -->
+
+                                      <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: relative; bottom: -2px; right: 6px; z-index: 1000; width: 33%">
+                                          <!-- Rechazos y Descarga -->
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="ShowRejections({!rowNum});" title="Motivos de rechazo">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/action-sprite/svg/symbols.svg#reject')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }','{!data.FileURL__c}'); return false;" title="Descargar">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <!-- Zoom y Rotar -->
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <!-- LLamadas -->
+                                          <!--
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" title="LLamada">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <apex:image rendered="{! IF(Case.CallMade__c && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="width: 10%;height: 10%;position: relative;left: 5%;" styleClass="slds-align_absolute-center"/>
+                                                      <apex:image rendered="{! IF(NOT(Case.CallMade__c) && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}" style="width:10%; height:10%;position: relative;left: 5%;" styleClass="slds-align_absolute-center"/>
+                                                      <apex:image rendered="{! IF(Case.CallMade__c && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="position: relative;bottom: 7px;"/>
+                                                      <apex:image rendered="{! IF(NOT(Case.CallMade__c) && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}"  />
+
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          -->
+                                      </div>
+                                      <br/>
+                                      <!-- Foto del trabajador -->
+                                      <div id="documentV1">
+                                          <apex:image value="{!IF(OR(ISNULL(data.FileURL__c),ISBLANK(data.FileURL__c)),URLFOR($Resource.IconosImagenes, 'tache.png'),data.FileURL__c)}" style="width:25%; height:25%;" title="{!$Label.AAZ_AccountDetailsFromProcedure_012}" styleClass="documentclassV{!rowNum}"/>
+                                      </div>
+                                    </div>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-size_1-of-1" rendered="{! IF(data.DocumentTypeId__c==strDigitalizationTrabajador2, true, false)}" style="text-align: center;">
+                                    <!-- Icono Teléfono -->
+                                    <div>
+                                        <apex:image rendered="{! IF(AND(Case.CallMade__c,OR(caseInstance.Type == strTypePhoceCase, caseInstance.Type == 'RECERTIFICACION')), true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="width: 10%;height: 10%;position: relative;left: 20%; bottom: -20px; margin: -5%; z-index: 1000;" styleClass="slds-align_absolute-center"/>
+                                        <apex:image rendered="{!
+                                        IF(AND(NOT(Case.CallMade__c),OR(caseInstance.Type == strTypePhoceCase, caseInstance.Type == 'RECERTIFICACION')), true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}" style="width:10%; height:10%;position: relative;left: 20%; bottom: -20px; margin: -5%; z-index: 1000;" styleClass="slds-align_absolute-center"/>
+                                    </div>
+
+                                    <div class="slds-truncate" title="{!$Label.AAZ_AccountDetailsFromProcedure_010}" align="center">
+                                        <!-- Rechazos -->
+
+                                        <!-- <img title="{!$Label.AAZ_AccountDetailsFromProcedure_011}" src="{!URLFOR($Resource.IconosImagenes, 'warning.png')}" class="warning{!rowNum}" onclick="ShowRejections({!rowNum});" width="10px" style="position:absolute;bottom:91px;left:138px;cursor:pointer" /> -->
+
+
+                                        <script type="text/javascript">
+                                            function startRefreshProcess()
+                                            {
+                                                primaryTabId = '';
+                                                currentSubTabId = '';
+                                                currentOrder = '1';
+                                                sforce.console.getEnclosingPrimaryTabId(redirectProcess);
+                                            }
+                                            var redirectProcess = function redirectProcess(result)
+                                            {
+                                                if(result.success){
+                                                    currentSubTabId = result.id;
+                                                    var newSubTabURL = encodeURI('/{!caseInstance.Id}');
+                                                    var newSubTabName = '{!caseInstance.CaseNumber}' ;
+                                                    var currentTabId = result.id;
+                                                    var urlToRedirect = '/apex/AAZ_CustomConsoleFullRefresh_pag?nextURL='+newSubTabURL+'&newTabName='+newSubTabName+'&previousTabId='+currentTabId+'&currentOrder='+currentOrder;
+                                                    sforce.console.openPrimaryTab(null,urlToRedirect, true,'abriendo',null);
+                                                }
+                                            };
+                                        </script>
+
+                                        <!-- Descargar -->
+                                        <!--
+                                        <a href="#">
+                                            <apex:image value="{!URLFOR($Resource.IconosImagenes, 'descargar.png')}" width="10" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }'); return false;" style="position:absolute;bottom:74px;left:136px;cursor:pointer"/>
+                                        </a>
+                                        -->
+
+                                        <!-- Rotar -->  <!-- zoom -->
+                                        <!-- <apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="10" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar" style="position: absolute; bottom: 53px; left: 138px"/>
+
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px" style="position: absolute; bottom: 33px; left: 136px; width: 14px;"/>
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px" style="position: absolute; bottom: 15px; left: 136px; width: 14px;"/> -->
+
+                                      <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: relative; bottom: -2px; right: 6px; z-index: 1000; width: 33%">
+                                          <!-- Rechazos y Descarga -->
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="ShowRejections({!rowNum});" title="Motivos de rechazo">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/action-sprite/svg/symbols.svg#reject')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }','{!data.FileURL__c}'); return false;" title="Descargar">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <!-- Zoom y Rotar -->
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                                  </svg>
+                                              </span>
+                                          </button>
+
+                                          <!-- LLamadas -->
+                                          <!--
+                                          <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" title="LLamada">
+                                              <span class="slds-text-not-selected">
+                                                  <svg class="slds-button__icon" aria-hidden="true">
+                                                      <apex:image rendered="{! IF(Case.CallMade__c && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="width: 10%;height: 10%;position: relative;left: 5%;" styleClass="slds-align_absolute-center"/>
+                                                      <apex:image rendered="{! IF(NOT(Case.CallMade__c) && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}" style="width:10%; height:10%;position: relative;left: 5%;" styleClass="slds-align_absolute-center"/>
+                                                      <apex:image rendered="{! IF(Case.CallMade__c && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_realizada.png')}" style="position: relative;bottom: 7px;"/>
+                                                      <apex:image rendered="{! IF(NOT(Case.CallMade__c) && caseInstance.Type == strTypePhoceCase, true, false) }" value="{!URLFOR($Resource.IconosImagenes, 'llamada_cancelada.png')}"  />
+
+                                                  </svg>
+                                              </span>
+                                          </button>
+                                          -->
+                                      </div>
+                                      <br/>
+                                      <!-- Foto del trabajador -->
+                                      <div id="documentV1">
+                                          <apex:image value="{!IF(OR(ISNULL(data.FileURL__c),ISBLANK(data.FileURL__c)),URLFOR($Resource.IconosImagenes, 'tache.png'),data.FileURL__c)}" style="width:25%; height:25%;" title="Foto Agente Promotor" styleClass="documentclassV{!rowNum}"/>
+                                      </div>
+                                    </div>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel styleClass="slds-size_1-of-2" rendered="{! IF(data.DocumentTypeId__c!=strDigitalizationTrabajador, true, false)}" layout="String">
+                                    <div class="slds-truncate" title="{!$Label.AAZ_AccountDetailsFromProcedure_010}" align="center" >
+<!--                                         <span style="font-size:12px" >
+                                            {!data.DocumentType__c}
+                                        </span> -->
+                                        <br/>
+                                        <!-- Firmas -->
+<!--
+                                        <apex:outputPanel style="position: absolute; font-weight:bold; font-size: 12px; left: 32px; bottom: 87px" rendered="{!IF(data.DocumentTypeId__c == '20', true, false)}">
+-->
+                                        <apex:outputPanel style="font-weight:bold; font-size: 12px;" rendered="{!IF(data.DocumentTypeId__c == '20', true, false)}">
+                                            <label>Firma del trabajador</label>
+                                        </apex:outputPanel>
+<!--
+                                        <apex:outputPanel style="position: absolute; font-weight:bold; font-size: 12px; left: 32px; bottom: 87px" rendered="{!IF(data.DocumentTypeId__c == '30', true, false)}">
+-->
+                                        <apex:outputPanel style="font-weight:bold; font-size: 12px;" rendered="{!IF(data.DocumentTypeId__c == '30', true, false)}">
+                                            <label>Firma del Agente Promotor</label>
+                                        </apex:outputPanel>
+
+<!--
+                                        <div id="utilityButtons" class="slds-button-group" role="group" style="overflow: hidden; position: absolute; bottom: 8px; right: 12px; z-index: 1000; width: 33%">
+-->
+                                        <div id="utilityButtons" class="slds-button-group slds-align_absolute-center" role="group" style="width: 82%; z-index: 1000; position: relative;">
+                                            <!-- Rechazos y Descarga -->
+                                            <!-- <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="ShowRejections({!rowNum});" title="Motivos de rechazo">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/action-sprite/svg/symbols.svg#reject')}" />
+                                                    </svg>
+                                                </span>
+                                            </button> -->
+                                            <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled" aria-live="assertive" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }','{!data.FileURL__c}'); return false;" title="Descargar">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#download')}" />
+                                                    </svg>
+                                                </span>
+                                            </button>
+
+                                            <!-- Zoom y Rotar -->
+                                            <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-in" aria-live="assertive" onclick="javascript:;" title="Zoom In">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomin')}" />
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                            <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-out" aria-live="assertive" onclick="javascript:;" title="Zoom Out">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#zoomout')}" />
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                            <button type="button" class="slds-button slds-button_icon slds-button_icon-border-filled documentV{!rowNum}-reset" aria-live="assertive" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar">
+                                                <span class="slds-text-not-selected">
+                                                    <svg class="slds-button__icon" aria-hidden="true">
+                                                        <use xlink:href="{! URLFOR($Asset.SLDS,'/assets/icons/utility-sprite/svg/symbols.svg#refresh')}" />
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <div id="documentV{!rowNum}">
+                                            <apex:image value="{!IF(OR(ISNULL(data.FileURL__c),ISBLANK(data.FileURL__c)),URLFOR($Resource.IconosImagenes, 'tache.png'),data.FileURL__c)}" style="width:85%; height:85%; position: relative;" title="Firma" styleClass="documentclassV{!rowNum}"/>
+                                        </div>
+
+                                        <!-- Rechazos -->
+<!--
+                                        <img title="{!$Label.AAZ_AccountDetailsFromProcedure_011}" src="{!URLFOR($Resource.IconosImagenes, 'warning.png')}" class="warning{!rowNum}" onclick="ShowRejections({!rowNum})" width="10px" style="cursor:pointer; position: absolute; bottom: 70px; left: 45px;"/>
+-->
+                                        <!-- Rotar -->
+<!--
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'rotate.png')}" styleClass="documentV{!rowNum}-reset" width="10" onclick="rotacion('documentclassV{!rowNum}')" title="Rotar" style="position: absolute; bottom: 66px; left: 118px"/>
+-->
+                                        <!-- Descarga -->
+<!--
+                                        <a href="#" style="position: absolute;bottom: 71px; left: 63px;">
+                                            <apex:image value="{!URLFOR($Resource.IconosImagenes, 'descargar.png')}" width="10" onclick="selectedFile({!data.DocumentTypeId__c}, '{! Case.Id }'); return false;" />
+                                        </a>
+-->
+                                        <!-- zoom -->
+<!--
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomin.png')}" styleClass="documentV{!rowNum}-in" width="35px" style="position: absolute; bottom: 64px; left: 82px; width: 14px;"/>
+                                        <apex:image value="{!URLFOR($Resource.IconosImagenes, 'zoomout.png')}" styleClass="documentV{!rowNum}-out" width="37px" style="position: absolute; bottom: 64px; left: 100px; width: 14px;"/>
+-->
+                                    </div>
+                                </apex:outputPanel>
+                                <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                            </apex:repeat>
+                        </div>
+                    </apex:outputPanel>
+
+                    <apex:outputPanel rendered="{! IF(intRelatedDocumentsAll==0, true, false)}">
+                        <apex:outputText value="Folio: {! strCIT2 }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel >
+                                    <apex:outputText value="{! strPrintsReq }" style="font-weight: bold; color:blue; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(strCIT!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Folio CIT: {! strCIT }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(strFolioCUS!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Folio CUS: {! strFolioCUS }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+
+                            <div class="slds-size_2-of-2 slds-align_absolute-center" >
+                                <apex:outputPanel rendered="{! IF(AND(DateCUSDate!=null,caseInstance.Type == strTypePhoceCase), true, false)}">
+                                    <apex:outputText value="Fecha de vencimiento CIT: {! dateCUSDate }" style="font-weight: bold; color:red; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strCaseType!=null, true, false)}">
+                                    <span>Tipo de servicio: </span>
+                                    <apex:outputText value="{! strCaseType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(AND(strCaseSubType!=null, caseInstance.RecordType.DeveloperName != 'totalRetreats' ), true, false)}">
+                                <!-- <apex:outputPanel rendered="{! IF(strCaseSubType!=null, true, false)}"> -->
+                                    <span>Subtipo de servicio: </span>
+                                    <apex:outputText value="{! strCaseSubType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strWithdrawtype!=null, true, false)}">
+                                    <span>Tipo Retiro: </span>
+                                    <apex:outputText value="{! strWithdrawtype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strIdSecuritytype!=null, true, false)}">
+                                    <span>Tipo Seguro: </span>
+                                    <apex:outputText value="{! strIdSecuritytype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strIdPensiontype!=null, true, false)}">
+                                    <span>Tipo Pensión: </span>
+                                    <apex:outputText value="{! strIdPensiontype }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strRegimeType!=null, true, false)}">
+                                    <span>Tipo Regimen: </span>
+                                    <apex:outputText value="{! strRegimeType }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(strStatusCase!=null, true, false)}">
+                                    <span>Estatus del trámite: </span>
+                                    <apex:outputText value="{! strStatusCase }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div>
+                            <!-- <div class="slds-size_2-of-2 slds-align_absolute-center">
+                                <apex:outputPanel rendered="{! IF(dTimeReviewDate!=null, true, false)}">
+                                    <span>Fecha de revisión </span>
+                                    <apex:outputText value="{! dTimeReviewDate }" style="font-weight: bold; color:black; font-size:12px"></apex:outputText>
+                                </apex:outputPanel>
+                            </div> -->
+                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert" style="font-size: 12px;">
+                            <span class="slds-assistive-text">error</span>
+                            <h2>{!$Label.AAZ_AccountDetailsFromProcedure_006}</h2>
+                        </div>
+                    </apex:outputPanel>
+
+                    <apex:repeat value="{!FieldSetFields}" var="field">
+                        <tr>
+                            <td style="text-align: center;">
+                                <div class="slds-form-element">
+                                    <label style="font-size: 12px; color:#000;" class="slds-form-element__label">{!field.label}</label>
+                                    <span style="font-weight: bold; font-size: 12px; color: #000">
+                                        <apex:outputField value="{!caseInstance[field]}"/>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                </div>
+            </apex:form>
+            <apex:form rendered="{!NOT(isItValidToStart)}">
+                <div class="slds-notify_container" style="position:relative;">
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_warning" role="alert">
+                        {!$Label.AAZ_AccountDetailsFromProcedure_007}
+                    </div>
+                </div>
+            </apex:form>
+            <br/>
+            <div id="beneficiarios"></div><br/>
+            <div id="referencias"></div><br/>
+        </body>
+    </html>
+</apex:page>

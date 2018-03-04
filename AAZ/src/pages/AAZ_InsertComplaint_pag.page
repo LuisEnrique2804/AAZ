@@ -1,0 +1,807 @@
+<!--/****************************************************************************************
+    Desarrollado por:  Avanxo México
+    Autor:             Luis Enrique Garcia Sanabria
+    Proyecto:          Mesa de Control Afore
+    Descripción:       La página de visualForce tiene como objetivo mostrar los resultados de
+    la busqueda del trabajados (Cuenta), tramite(Caso) y agente promotor(Contacto), asi como
+    el registro de una queja  y un comentario dentro del mismo
+
+    Cambios (Versiones)
+    *****************************************************************************************
+      No.      Fecha                  Autor                      Descripción
+    *****   *************  *****************************    *********************************
+     0.1     22-07-2017    Luis Enrique Garcia Sanabria     Creacion
+     0.2     22-07-2017    Luis Enrique Garcia Sanabria     Construcción
+     1.0     25-07-2017    Luis Enrique Garcia Sanabria     Finalización y documentación
+     1.1     09-08-2017    Luis Enrique Garcia Sanabria     Ajustes
+*********************************************************************************************/-->
+
+<apex:page standardController="Case" showHeader="false" sidebar="false" docType="html-5.0" extensions="AAZ_InsertComplaint_ctr" standardStylesheets="false">
+	<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<head>
+		    <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <title>Nueva Queja</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <apex:includeScript value="/support/console/39.0/integration.js"/>
+
+            <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+        	<script src="{!URLFOR($Resource.AAZ_appiphonyLightningJs, '/jquery.aljs-init.min.js')}"></script>
+        	<script src="{!URLFOR($Resource.AAZ_appiphonyLightningJs, '/jquery.aljs-datepicker.min.js')}"></script>
+            <apex:includeScript value="http://momentjs.com/downloads/moment.js"/>
+        	<apex:includeScript value="{! $Resource.TablaSLDS }"/>
+
+            <apex:includeLightning />
+            <apex:slds />
+		</head>
+		<body id="body" class="slds-scope" style="background-color: white; width: 100%;">
+			<!-- Spinner -->
+			<apex:actionStatus id="processing">
+	            <apex:facet name="start">
+	                <div class="slds-spinner_container slds-is-fixed">
+	                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+	                        <span class="slds-assistive-text">Procesando</span>
+	                        <div class="slds-spinner__dot-a"></div>
+	                        <div class="slds-spinner__dot-b"></div>
+	                    </div>
+	                </div>
+	            </apex:facet>
+	        </apex:actionStatus>
+	        <!-- Encabezado -->
+	        <div >
+	            <div class="slds-page-header slds-m-bottom--small" role="banner">
+	                <div class="slds-media slds-media--center">
+	                    <div class="slds-media__figure">
+	                    	<span class="slds-icon_container slds-icon_container_circle" style="background-color: #af272f">
+		                        <svg class="slds-icon" aria-hidden="true">
+		                            <use xlink:href="{!URLFOR($Resource.AAZ_SLDS,'/assets/icons/action-sprite/svg/symbols.svg#announcement')}"></use>
+		                        </svg>
+		                        <span class="slds-assistive-text">Queja</span>
+		                    </span>
+	                    </div>
+	                    <div class="slds-media__body">
+	                        <p class="slds-page-header__title slds-truncate">{!$Label.AAZ_InsertComplaint_003}</p>
+	                        <!-- <p class="slds-page-header__title slds-truncate" title="Rohde Corp - 80,000 Widgets">{!$Label.AAZ_InsertComplaint_004}</p> -->
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	        <!-- Este form solo se utiliza para mostrar la búsqueda general -->
+	        <apex:form id="main">
+	        	<apex:actionStatus id="processing">
+		            <apex:facet name="start">
+		                <div class="slds-spinner_container slds-is-fixed">
+		                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+		                        <span class="slds-assistive-text">Procesando</span>
+		                        <div class="slds-spinner__dot-a"></div>
+		                        <div class="slds-spinner__dot-b"></div>
+		                    </div>
+		                </div>
+		            </apex:facet>
+		        </apex:actionStatus>
+	        	<!-- Funcion para saber que el caso fue creado -->
+	        	<apex:outputPanel id="redirctToCase" rendered="{!blnIsInteractionCreated}">
+                    <script type="text/javascript">
+                        function createNewCase() {
+                        	console.log('Test');
+		                    sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, 'Detalle de Caso');
+		                }
+                    </script>
+                </apex:outputPanel>
+                <!-- Encabezado de busqueda -->
+	        	<div id="case" class="slds-col slds-m-horizontal--small">
+		        	<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_005} </h3>
+        			<apex:outputPanel id="mesg" rendered="{!blnMessasgeComplain }">
+			        	<div class="slds-notify_container" style="display:{!IF(lstSuccessMsgs.size <> 0,'inline','none')}; position:relative;">
+			                <div class="slds-notify slds-notify--alert slds-theme--alert-texture"  role="alert">
+			                    <span class="slds-assistive-text">Info</span>
+			                    <ul>
+			                        <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+			                            <li>
+			                                {!strMsg}
+			                            </li>
+			                        </apex:repeat>
+			                    </ul>
+			                </div>
+		            	</div>
+			            <div class="slds-notify_container" style="display:{!IF(lstErrorMsgs.size <> 0,'inline','none')}; position: relative;">
+			                <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+			                    <span class="slds-assistive-text">Error</span>
+			                    <br/>
+			                    <ul>
+			                        <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+			                            <li>
+			                                {!strMsg}
+			                            </li>
+			                        </apex:repeat>
+			                    </ul>
+			                </div>
+			            </div>
+		    		</apex:outputPanel>
+		        </div>
+
+						<apex:outputPanel id="panelBusqueda" rendered="{!blnShowBusqueda}">
+		        <div class="slds-m-top--x-small slds-grid slds-box slds-wrap slds-grid_pull-padded slds-m-horizontal--small slds-grid_vertical-align-center slds-grid_align-center">
+	  				<div class="slds-p-horizontal_small slds-size_1-of-2">
+	  					<div class="slds-col slds-p-horizontal--medium">
+	                        <div class="slds-form-element">
+	                            <div class="slds-form-element">
+	                                <label class="slds-form-element__label" for="text-input-prioridad">{!$Label.AAZ_InsertComplaint_006}</label>
+	                                <apex:input id="nss" value="{!stgNss}"  type="text" styleclass="slds-input"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	  				</div>
+		        	<div class="slds-p-horizontal_small slds-size_1-of-2">
+		        		<div class="slds-col slds-p-horizontal--medium">
+	                        <div class="slds-form-element">
+	                            <div class="slds-form-element">
+	                                <label class="slds-form-element__label" for="text-input-prioridad">{!$Label.AAZ_InsertComplaint_007}</label>
+	                                <apex:input id="curp" value="{!stgCurp}"  type="text" styleclass="slds-input"/>
+	                            </div>
+	                        </div>
+	                    </div>
+		        	</div>
+	  				<div class="slds-p-horizontal_small slds-size_1-of-3">
+	  					<div class="slds-col slds-p-horizontal--medium">
+	                        <div class="slds-form-element">
+	                            <div class="slds-form-element">
+	                            	<label class="slds-form-element__label" for="text-input-prioridad">{!$Label.AAZ_InsertComplaint_008}</label>
+	                                <apex:input id="name" value="{!stgName}"  type="text" styleclass="slds-input"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	  				</div>
+	  				<div class="slds-p-horizontal_small slds-size_1-of-3">
+	  					<div class="slds-col slds-p-horizontal--medium">
+	                        <div class="slds-form-element">
+	                            <div class="slds-form-element">
+	                            	<label class="slds-form-element__label" for="text-input-prioridad">Apellido Paterno</label>
+	                                <apex:input id="patname" value="{!stgFatherLastName}"  type="text" styleclass="slds-input"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	  				</div>
+	  				<div class="slds-p-horizontal_small slds-size_1-of-3">
+	  					<div class="slds-col slds-p-horizontal--medium">
+	                        <div class="slds-form-element">
+	                            <div class="slds-form-element">
+	                            	<label class="slds-form-element__label" for="text-input-prioridad">Apellido Materno</label>
+	                                <apex:input id="mathername" value="{!stgMathernalName}"  type="text" styleclass="slds-input"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	  				</div>
+	  				<br/>
+	  				<div class="slds-p-horizontal_small slds-size_1-of-1">
+	  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+                <div class="slds-form-element">
+                    <div class="slds-form-element">
+                    	<div class="slds-button-group slds-grid_align-end" role="group">
+							<apex:commandButton status="processing" styleClass="slds-button slds-button--neutral" value="{!$Label.AAZ_InsertComplaint_010}" action="{!searchCaseContAcc}"/>
+						</div>
+                    </div>
+                </div>
+              </div>
+	  				</div>
+		        </div>
+						</apex:outputPanel>
+	    		<br/>
+	    		
+			       </apex:form>
+			       <apex:outputPanel rendered="{!NOT(blnSearchWasNotOK) && !NOT(blnServiceShowPanel)}">
+		        <div class="slds-grid">
+					<div id="worker" class="slds-col slds-m-horizontal--small">
+		  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_012}</h3>
+		  				<div id="case" class="slds-box slds-m-top--x-small" style="height: 450px">
+			  				<apex:form rendered="{!blnIsItValidToStart}">
+			                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstComplain}" var="field">
+			                        <tr>
+			                            <td style="text-align: center;">
+			                                <div class="slds-form-element">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                        <apex:outputText value="{!IF(OR(ISNULL(relatedWorker[field]),ISBLANK(relatedWorker[field])),'No especificado',relatedWorker[field])}"/>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+				            </apex:form>
+				            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+				                <div class="slds-notify_container" style="position:relative;">
+				                    <apex:repeat value="{!$ObjectType.Account.Fieldsets.LstComplain}" var="field">
+				                        <tr>
+				                            <td>
+				                                <div class="slds-form-element slds-text-align_left">
+				                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+				                                </div>
+				                            </td>
+				                        </tr>
+				                    </apex:repeat>
+				                </div>
+				            </apex:form>
+		  				</div>
+					</div>
+					<br/>
+					<div id="case" class="slds-col slds-m-horizontal--small">
+		  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_015}</h3>
+		  				<div id="case" class="slds-box slds-m-top--x-small" style="height:  450px">
+		  					<apex:form rendered="{!blnIsItValidToStart}">
+				                <div class="slds-notify_container" style="position:relative;">
+				                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplain}" var="field">
+				                        <tr>
+				                            <td style="text-align: center;">
+				                                <div class="slds-form-element slds-text-align_left">
+				                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+				                                    <apex:outputText value="{!IF(OR(ISNULL(caseInstance[field]),ISBLANK(caseInstance[field])),'No especificado',caseInstance[field])}"/>
+				                                </div>
+				                            </td>
+				                        </tr>
+				                    </apex:repeat>
+				                </div>
+				            </apex:form>
+				            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+				                <div class="slds-notify_container" style="position:relative;">
+				                    <apex:repeat value="{!$ObjectType.Case.Fieldsets.LstComplain}" var="field">
+				                        <tr>
+				                            <td style="text-align: center;">
+				                                <div class="slds-form-element slds-text-align_left">
+				                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+				                                </div>
+				                            </td>
+				                        </tr>
+				                    </apex:repeat>
+				                </div>
+				            </apex:form>
+		  				</div>
+					</div>
+					<br/>
+					<div id="ap" class="slds-col slds-m-horizontal--small">
+		  				<h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">{!$Label.AAZ_InsertComplaint_018}</h3>
+		  				<div id="caseE" class="slds-box slds-m-top--x-small" style="height:  450px">
+		  					<apex:form rendered="{!blnIsItValidToStart}">
+			                    <apex:repeat value="{!$ObjectType.Contact.Fieldsets.LstComplain}" var="field">
+			                        <tr>
+			                            <td style="text-align: center;">
+			                                <div class="slds-form-element">
+			                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+			                                        <apex:outputText value="{!IF(OR(ISNULL(relatedAgent[field]),ISBLANK(relatedAgent[field])),'No especificado',relatedAgent[field])}"/>
+			                                </div>
+			                            </td>
+			                        </tr>
+			                    </apex:repeat>
+				            </apex:form>
+				            <apex:form rendered="{!NOT(blnIsItValidToStart)}">
+				                <div class="slds-notify_container" style="position:relative;">
+				                    <apex:repeat value="{!$ObjectType.Contact.Fieldsets.LstComplain}" var="field">
+				                        <tr>
+				                            <td>
+				                                <div class="slds-form-element slds-text-align_left">
+				                                    <label class="slds-form-element__label" style="font-weight: bold;">{!field.label}</label>
+				                                </div>
+				                            </td>
+				                        </tr>
+				                    </apex:repeat>
+				                </div>
+				            </apex:form>
+		  				</div>
+					</div>
+					<br/>
+				</div>
+			</apex:outputPanel>
+			       <apex:form id="main2">
+			       	<apex:inputHidden value="{!dateComplain}" id="dateC2"/>
+	        		<apex:inputHidden value="{!dateCaptureComplain}" id="dateCC2"/>
+			        <apex:outputPanel rendered="{!NOT(blnSearchWasNotOK)&& !NOT(blnServiceShowPanel)}">
+			        <script type="text/javascript">
+                        function createNewCase() {
+                        	console.log('Test');
+		                    sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, 'Detalle de Caso');
+		                }
+                    </script>
+			        <div id="Registro" class="slds-col slds-m-horizontal--small">
+			        <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">Detalles de la queja</h3>
+			        <apex:outputPanel rendered="{!NOT(blnMessasgeComplain)}">
+				        <div class="slds-notify_container" style="display:{!IF(lstSuccessMsgs.size <> 0,'inline','none')}; position:relative;">
+			                <div class="slds-notify slds-notify--alert slds-theme--alert-texture"  role="alert">
+			                    <span class="slds-assistive-text">Info</span>
+			                    <ul>
+			                        <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+			                            <li>
+			                                {!strMsg}
+			                            </li>
+			                        </apex:repeat>
+			                    </ul>
+			                </div>
+			            </div>
+			            <div class="slds-notify_container" style="display:{!IF(lstErrorMsgs.size <> 0,'inline','none')}; position: relative;">
+			                <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+			                    <span class="slds-assistive-text">Error</span>
+			                    <br/>
+			                    <ul>
+			                        <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+			                            <li>
+			                                {!strMsg}
+			                            </li>
+			                        </apex:repeat>
+			                    </ul>
+			                </div>
+			            </div>
+			        </apex:outputPanel>
+			        </div>
+				        <div class="slds-m-top--x-small slds-grid slds-box slds-wrap slds-grid_pull-padded slds-m-horizontal--small slds-grid_vertical-align-center slds-grid_align-center">
+
+				        	
+				        	
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Teléfono del trabajador</label>
+			                                <apex:inputText id="newDesc4" value="{!stgPhoneWorker}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Correo electrónico</label>
+			                                <apex:inputText id="newDesc6" value="{!stgEmail}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Calle</label>
+			                                <apex:inputText id="newDesc7" value="{!stgStreet}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número Interior</label>
+			                                <apex:inputText id="newDesc8" value="{!stgInternalNumber}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número Exterior</label>
+			                                <apex:inputText id="newDesc9" value="{!stgExternalNumber}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Delegación</label>
+			                                <apex:inputText id="newDesc10" value="{!stgDelegation}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Estado</label>
+			                                <apex:inputText id="newDesc11" value="{!stgState}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">País</label>
+			                                <apex:inputText id="newDesc12" value="{!stgCountry}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<!-- <div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número de Afore Cedente</label>
+			                                <apex:input type="number" id="newDesc14" value="{!stgAforeNumber}" styleclass="slds-input" html-placeholder="Solo números"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Afore Cedente</label>
+			                                <apex:inputText id="newDesc15" value="{!stgAforeToPass}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div> -->
+                            <div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Origen</label>
+			                                <apex:inputText id="newDesc2" value="{!stgOrigin}" styleclass="slds-input req" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Fecha de Queja</label>
+	                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+	                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+	                                                <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+	                                            </svg>
+	                                            <!-- <apex:inputText value="{!strFechaInicio}" id="dateInicio" styleClass="slds-input"/> -->
+	                                            <input id="dateInicio" class="slds-input" type="text" placeholder="Fecha Inicio" label="Fecha de Inicio" value="{!dateComplain}" required="true"/>
+	                                        </div>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Fecha de captura de la queja</label>
+			                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+	                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+	                                                <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+	                                            </svg>
+	                                            <!-- <apex:inputText value="{!strFechaInicio}" id="dateInicio" styleClass="slds-input"/> -->
+	                                            <input id="dateFin" class="slds-input" type="text" placeholder="Fecha Inicio" label="Fecha de Inicio" value="{!dateCaptureComplain}" required="true"/>
+	                                        </div>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+                            <div class="slds-p-horizontal_small slds-size_1-of-1">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">{!$Label.AAZ_InsertComplaint_009}</label>
+			                                <apex:inputText id="newDesc16" value="{!stgComplain}" styleclass="slds-input" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+			  				<div class="slds-p-horizontal_small slds-size_1-of-3 slds-align_absolute-center">
+			  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                            	<div class="slds-button-group" role="group">
+			                            		<!-- sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, 'Detalle de Caso'); -->
+												<apex:commandButton disabled="{!NOT(blnListNotEmpty)}" styleClass="slds-button slds-button--neutral" value="Regresar a búsqueda" onclick="backSearch()"/>
+												<apex:commandButton disabled="{!NOT(blnListNotEmpty)}"  styleClass="slds-button slds-button--neutral" value="{!$Label.AAZ_InsertComplaint_011}" action="{!procedurePending}" oncomplete="sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, '{!objCaseQ.CaseNumber}');" />
+												<apex:commandButton disabled="{!NOT(blnListNotEmpty)}" status="processing" styleClass="slds-button slds-button--neutral" value="Bloquear AP" action="{!LockUnlockAP2}"/>
+											</div>
+			                            </div>
+			                        </div>
+			                    </div>
+			  				</div>
+				        </div>
+				    </apex:outputPanel>
+				    <apex:outputPanel rendered="{!blnSearchWasNotOK && !NOT(blnServiceShowPanel2)}">
+				        <div id="Registro" class="slds-col slds-m-horizontal--small">
+			        <h3 class="slds-section-title--divider" style="background-color:#75787b; color:#fff; font-family: Arial, Helvetica, sans-serif; font-size:12px;">
+			        {!$Label.AAZ_InsertComplaint_003}	</h3>
+			        </div>
+				        <div class="slds-m-top--x-small slds-grid slds-box slds-wrap slds-grid_pull-padded slds-m-horizontal--small slds-grid_vertical-align-center slds-grid_align-center">
+				        	
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Nombre</label>
+			                                <apex:inputText id="Complain25" value="{!stgName2}" styleclass="slds-input" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Apellido Paterno</label>
+			                                <apex:inputText id="Complain18" value="{!stgFatherLastName2}" styleclass="slds-input" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Apellido Materno</label>
+			                                <apex:inputText id="Complain17" value="{!stgMathernalName2}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número de seguridad Social</label>
+			                                <apex:inputText id="Complain2" value="{!stgNss2}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">CURP</label>
+			                                <apex:inputText id="Complain21" value="{!stgCurp2}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Correo electrónico</label>
+			                                <apex:inputText id="Complain6" value="{!stgEmail}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Teléfono del trabajador</label>
+			                                <apex:inputText id="Complain4" value="{!stgPhoneWorker}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Calle</label>
+			                                <apex:inputText id="Complain7" value="{!stgStreet}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número Interior</label>
+			                                <apex:inputText id="Complain8" value="{!stgInternalNumber}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número Exterior</label>
+			                                <apex:inputText id="Complain9" value="{!stgExternalNumber}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Delegación</label>
+			                                <apex:inputText id="Complain10" value="{!stgDelegation}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Estado</label>
+			                                <apex:inputText id="Complain11" value="{!stgState}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">País</label>
+			                                <apex:inputText id="Complain12" value="{!stgCountry}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Número de Afore Cedente</label>
+			                                <apex:input type="number" id="Complain14" value="{!stgAforeNumber}" styleclass="slds-input" html-placeholder="Solo números"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Afore Cedente</label>
+			                                <apex:inputText id="Complain15" value="{!stgAforeToPass}" styleclass="slds-input"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+                            <div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Origen</label>
+			                                <apex:inputText id="Complain22" value="{!stgOrigin}" styleclass="slds-input" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Fecha de Queja</label>
+	                                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+	                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+	                                                <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+	                                            </svg>
+	                                            <!-- <apex:inputText value="{!strFechaInicio}" id="dateInicio" styleClass="slds-input"/> -->
+	                                            <input id="dateInicio" class="slds-input" type="text" placeholder="Fecha Inicio" label="Fecha de Inicio" value="{!dateComplain}" required="true"/>
+	                                        </div>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+				        	<div class="slds-p-horizontal_small slds-size_1-of-3">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">Fecha de captura de la queja</label>
+			                                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+	                                            <svg aria-hidden="true" class="slds-input__icon slds-icon-text-default">
+	                                                <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#event')}"></use>
+	                                            </svg>
+	                                            <!-- <apex:inputText value="{!strFechaInicio}" id="dateInicio" styleClass="slds-input"/> -->
+	                                            <input id="dateFin" class="slds-input" type="text" placeholder="Fecha Inicio" label="Fecha de Inicio" value="{!dateCaptureComplain}" required="true"/>
+	                                        </div>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+                            <div class="slds-p-horizontal_small slds-size_1-of-1">
+				        		<div class="slds-col slds-p-horizontal--medium">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                                <label class="slds-form-element__label" for="text-input-prioridad">{!$Label.AAZ_InsertComplaint_009}</label>
+			                                <apex:inputText id="Complain" value="{!stgComplain}" styleclass="slds-input" required="true"/>
+			                            </div>
+			                        </div>
+			                    </div>
+				        	</div>
+			  				<div class="slds-p-horizontal_small slds-size_1-of-3 slds-align_absolute-center">
+			  					<div class="slds-col slds-p-horizontal--medium slds-align-bottom ">
+			                        <div class="slds-form-element">
+			                            <div class="slds-form-element">
+			                            	<div class="slds-button-group" role="group">
+			                            		<!-- sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, 'Detalle de Caso'); -->
+			                            		<apex:commandButton styleClass="slds-button slds-button--neutral" value="Regresar a búsqueda" onclick="backSearch()"/>
+												<apex:commandButton styleClass="slds-button slds-button--neutral" value="{!$Label.AAZ_InsertComplaint_011}" action="{!procedurePending}" oncomplete="sforce.console.openPrimaryTab(null, '/{!lastInteractionCreated}', true, '{!objCaseQ.CaseNumber}');" />
+											</div>
+			                            </div>
+			                        </div>
+			                    </div>
+			  				</div>
+				        </div>
+				    </apex:outputPanel>
+
+
+		    </apex:form>
+		    <br/>
+				
+
+      		<script type="text/javascript">
+      		function callActionFunction() {
+        var dateComplain = document.getElementById("dateInicio2").value;
+        var dateCaptureComplain = document.getElementById("dateFin2").value;
+
+        //acBusqueda(dateComplain,dateCaptureComplain);
+    }
+    function backSearch(){
+    	blnServiceShowPanel=false;
+    	blnShowBusqueda=true;
+    	window.top.location='/console';
+    }
+    function putDate(){
+    	        var dateComplain = document.getElementById("dateInicio2").value;
+
+    	        document.getElementById("j_id0:main2:dateC2").value = dateComplain;
+    	        console.log("this = "+dateComplain);
+
+    }
+
+					function prueba() {
+						var nss = jQuery('[id$=nss]').val();
+						jQuery('[id$=nss]').val(nss);
+						console.log(nss);
+				        stgNss='';
+				        stgCurp='';
+						stgName='';
+						stgFatherLastName='';
+						stgMathernalName='';
+
+					}
+
+      			var $j = jQuery.noConflict();
+				 //Assigning SLDS Static Resource Path To A Variable To Use It With ALJS Initialization
+				 var assetsLoc = '{!URLFOR($Asset.SLDS)}';
+				 var eventDateValue = '';
+				 //Override Common Settings with SLDS Static Resource Path (Optional)
+				 $j.aljsInit({
+				 assetsLocation: assetsLoc, // Specifies the directory containing SLDS's assets directory
+				 scoped: true // Specifies whether or not the page is scoped using the slds class
+				 });
+
+    			$j(document).ready(function() {
+                	//Initializing Datepicker
+                    $j('#dateInicio').datepicker({
+                    	initDate: moment(), // Assign Today's Date
+                    	format: 'DD-MMM-YYYY', // Specify the Date Format Of Datepicker Input Field (YYYY-MM-DD,YYYY/MM/DD ,DD/MM/YYYY ....etc)
+		                // onChange function to change the value once it is selected
+		                onChange: function(datepicker) {
+                		// Specify the format
+                 		eventDateValue =moment(datepicker.selectedFullDate._d).format('DD/MM/YYYY');
+                 		document.getElementById("j_id0:main2:dateC2").value=eventDateValue;
+                 		 console.log("this = "+document.getElementById("j_id0:main2:dateC2").value);
+                 		}
+                 	});
+
+
+                 	$j('#dateFin').datepicker({
+                 initDate: moment(), // Assign Today's Date
+                 format: 'DD-MMM-YYYY', // Specify the Date Format Of Datepicker Input Field (YYYY-MM-DD,YYYY/MM/DD ,DD/MM/YYYY ....etc)
+                 // onChange function to change the value once it is selected
+                 onChange: function(datepicker) {
+                 // Specify the format
+                 eventDateValue =moment(datepicker.selectedFullDate._d).format('DD/MM/YYYY');
+                 document.getElementById("j_id0:main2:dateCC2").value=eventDateValue;
+                 		 console.log("this = "+document.getElementById("j_id0:main2:dateCC2").value);
+                 }
+                 });
+             	});//init
+    		</script>
+
+		</body>
+	</html>
+</apex:page>

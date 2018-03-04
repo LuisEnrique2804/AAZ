@@ -1,0 +1,173 @@
+<apex:page showHeader="false" sidebar="false" controller="AAZ_NewAPDocument_ctr">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <meta chaset="utf-8" />
+            <apex:slds />
+        </head>
+        <body class="slds-scope" style="width:100%; text-align:center; background-color:white;">
+            <apex:actionStatus id="processing">
+              <apex:facet name="start">
+                  <div class="slds-spinner_container slds-is-fixed">
+                      <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                          <span class="slds-assistive-text">Processing</span>
+                          <div class="slds-spinner__dot-a"></div>
+                          <div class="slds-spinner__dot-b"></div>
+                      </div>
+                  </div>
+              </apex:facet>
+            </apex:actionStatus>
+            <apex:form id="headerForm">
+                <apex:outputPanel >
+                    <div class="slds-page-header">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-has-flexi-truncate">
+                                <div class="slds-media slds-no-space slds-grow">
+                                    <div class="slds-media__figure">
+                                        <svg class="slds-icon slds-icon-standard-event" aria-hidden="true">
+                                            <use xlink:href="{!URLFOR($Resource.AAZ_SLDS,'/assets/icons/standard-sprite/svg/symbols.svg#file')}">
+                                            </use>
+                                        </svg>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-title--caps slds-line-height--reset">{!$Label.AAZ_NewAPDocument_001}</p>
+                                        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate" title="this should match the Record Title">{!$Label.AAZ_NewAPDocument_002}</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+            </apex:form>
+            <apex:form id="testForm">
+                    <apex:actionFunction name="changeMode" action="{!determinateWhatAppliesBasedOnMode}" reRender="testForm" status="processing"/>
+                    <tr>
+                        <td style="text-align:center;">
+                            <div class="slds-text-body_regular">
+                                Acción
+                            </div>
+                        </td>
+                        <td style="text-align:center;">
+                            <apex:selectList value="{!strSelectedDocType}" size="1" onchange="changeMode();">
+                                <apex:selectOptions value="{!lstSelectOptionsForMode}" />
+                            </apex:selectList>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            &nbsp;
+                        </td>
+                    </tr>
+                    <apex:outputPanel id="testOP">
+                        <apex:outputPanel rendered="{!blnShowDocumentLookUp}" >
+                            <tr>
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        Documento
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:inputField value="{!caseInstance.AttachedDoc__c}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+            </apex:form>
+            <apex:form id="MainForm">
+                
+                <apex:outputPanel id="msgsOP">
+                    <apex:outputPanel rendered="{!lstErrorMsgs.size <> 0}">
+                        <div class="BAZ">
+                            <div class="slds-notify_container" style="position:relative;">
+                                <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+                                    <span class="slds-assistive-text">Error</span>
+                                    <h2>
+                                            <ul>
+                                                <apex:repeat value="{!lstErrorMsgs}" var="strMsg">
+                                                    <li>
+                                                        {!strMsg}
+                                                    </li>
+                                                </apex:repeat>
+                                            </ul>
+                                        </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="OPResults" rendered="{!lstSuccessMsgs.size <> 0}">
+                        <div class="slds-notify_container" style="position:relative;">
+                            <div class="slds-notify slds-notify--alert slds-theme--alert-texture" role="alert">
+                                <span class="slds-assistive-text">Info</span>
+                                <ul>
+                                    <apex:repeat value="{!lstSuccessMsgs}" var="strMsg">
+                                        <li>
+                                            {!strMsg}
+                                        </li>
+                                    </apex:repeat>
+                                </ul>
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel >
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div class="slds-box" style="width:80%; margin: 0 auto;">
+                        <br/>
+                        <table style="width:400px; margin:0 auto;">
+                            <tr>
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        {!$Label.AAZ_NewAPDocument_003}
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    &nbsp; &nbsp;
+                                    <apex:selectList size="1" styleClass="slds-select" value="{!strSelectedDocType}">
+                                        <apex:selectOptions value="{!DocumentTypeOptions}" />
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="text-align:center;">
+                                    <apex:inputFile value="{!attchmntInstance.Body}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <div class="slds-text-body_regular">
+                                        {!$Label.AAZ_NewAPDocument_004}
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <apex:inputField value="{!docAPInstance.Name}" styleClass="slds-input" />
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <br/>
+                        <div class="slds-button-group" role="group" style="width:100px; margin:0 auto;">
+                            <apex:commandButton styleClass="slds-button slds-button_brand" value="Enviar" />
+                            <apex:commandButton styleClass="slds-button slds-button_neutral" value="Limpiar" action="{!initiateVars}" />
+                        </div>
+                    </div>
+                </apex:outputPanel>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

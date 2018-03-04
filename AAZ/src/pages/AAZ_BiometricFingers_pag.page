@@ -1,0 +1,95 @@
+<!--*******************************************************************************
+Desarrollado por: Avanxo México
+Autor: Samuel Galindo
+Proyecto: Afore Azteca
+Descripción: VisualForce donde se registra las huellas para poder realizar las validaciones en los biometricos
+-------------------------------------
+No.    Fecha      Autor                      Descripción
+------ ---------- -------------------------- -----------
+0.1     29-08-2017    Samuel Galindo         Creación
+0.2     31-08-2017    Samuel Galindo         Imagén Dedos
+*******************************************************************************-->
+<apex:page showHeader="false" standardStylesheets="true" sidebar="false"
+	applyHtmlTag="true"
+	applyBodyTag="false" controller="AAZ_BiometricFingers_ctr">
+	<html>
+		<head>
+			<apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"/>
+			<apex:includeScript value="{!URLFOR($Resource.ManipulationImage, 'js/jQuery.js') }"/>
+			<script type="text/javascript">
+					function dibujaDedo1(id){
+						jQuery('[id$=HiddenField1]').val($(id).val());
+						muestraDedo();
+					}
+
+					function dibujaDedo2(id){
+						jQuery('[id$=HiddenField2]').val($(id).val());
+						muestraDedo();
+					}
+					function refresh (){
+						setTimeout("window.top.location='/console';", 3000);
+					}
+
+			</script>
+
+		</head>
+		<body>
+		<apex:slds />
+			<div class="slds-scope" style="background-color: white;margin-left: 16%;margin-right: 16%;margin-top: 2%;">
+			<h1 align="center" style="font-size: 25px;">{! $Label.AAZ_BiometricFingers_004}</h1>
+				<apex:form id="biometricform" >
+					<div class="slds-size_2-of-2 slds-align_absolute-center">
+						<apex:commandButton value="Guardar" action="{!biometricFingersSave}"  oncomplete="refresh()" styleClass="slds-button slds-button_brand" reRender="biometricform" style="margin-bottom:20px"/>
+					</div>
+					<apex:actionFunction reRender="dedosimg" name="muestraDedo"/>
+					<apex:inputHidden value="{!strOpcionDedo1}" id="HiddenField1"/>
+					<apex:inputHidden value="{!strOpcionDedos2}" id="HiddenField2"/>
+
+					<apex:outputPanel styleClass="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_info" rendered="{!blnSuccess}">
+						<h2>{! $Label.AAZ_BiometricFingers_001 }</h2>
+					</apex:outputPanel>
+					<div class="slds-grid slds-wrap">
+						<div class="slds-size_1-of-2">
+							<div class="slds-form-element">
+								<label class="slds-form-element__label">{! $Label.AAZ_BiometricFingers_002 }</label>
+								<div class="slds-form-element__control">
+									<div class="slds-select_container" style="width: 95%">
+								        <apex:selectList styleClass="slds-select" value="{!strOpcionDedo1}" multiselect="false" size="1" onchange="dibujaDedo1(this)">
+								            <apex:selectOptions value="{!lstDedo1}"/>
+								        </apex:selectList>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="slds-size_1-of-2">
+							<div class="slds-form-element">
+								<label class="slds-form-element__label">{! $Label.AAZ_BiometricFingers_003 }</label>
+								<div class="slds-form-element__control">
+									<div class="slds-select_container" style="width: 95%">
+								        <apex:selectList styleClass="slds-select" value="{!strOpcionDedos2}" multiselect="false" size="1" onchange="dibujaDedo2(this)">
+								            <apex:selectOptions value="{!lstDedo2}"/>
+								        </apex:selectList>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<br/><br/>
+
+					<apex:outputPanel layout="block" styleClass="slds-grid slds-wrap" id="dedosimg">
+						<div class="slds-size_1-of-2">
+							<apex:outputPanel layout="block" rendered="{!IF(strOpcionDedo1!='', true, false)}">
+								<apex:image url="{!URLFOR($Resource.DedosBiometrico, strOpcionDedo1+'.png')}" style="width:90%"/>
+							</apex:outputPanel>
+						</div>
+						<div class="slds-size_1-of-2">
+							<apex:outputPanel layout="block" rendered="{!IF(strOpcionDedos2!='', true, false)}">
+								<apex:image url="{!URLFOR($Resource.DedosBiometrico, strOpcionDedos2+'.png')}" style="width:90%"/>
+							</apex:outputPanel>
+						</div>
+					</apex:outputPanel>
+				</apex:form>
+			</div>
+		</body>
+	</html>
+</apex:page>
