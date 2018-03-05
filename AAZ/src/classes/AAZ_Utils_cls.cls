@@ -217,13 +217,17 @@ global class AAZ_Utils_cls {
         return lstFieldSetMemebers;
     }
 
-
+    public static Boolean documentsRequiredComplete( Case objCase){
+        Boolean blIsComplete = false;
+        blIsComplete = documentsRequiredComplete(objCase, null)
+        return blIsComplete;
+    }
 
     /*
         Método para validar si los documentos requeridos por cada tramite estan en el mismo.
     */
 
-    public static Boolean documentsRequiredComplete( Case objCase ){
+    public static Boolean documentsRequiredComplete( Case objCase, List<Document__c> lstDocCase ){
         Boolean                                   blnServiceHadError           = false;
         string                                    stgMessage                   = '';
         String                                    stgtypeError                 = Label.AAZ_Utils_001;
@@ -252,9 +256,14 @@ global class AAZ_Utils_cls {
         caseDevName= (mapRegisterType.get('Case').containsKey(objCase.RecordTypeId))
             ?mapRegisterType.get('Case').get(objCase.RecordTypeId).DeveloperName:'';
         if(idCurrentCase != null) {
-            strQueryOverDocuments = 'SELECT '+String.join(new List<String>(SObjectType.Document__c.Fields.getMap().keySet()), ', ')+' FROM Document__c WHERE RelatedProcedure__c = \''+idCurrentCase+'\'';
-            try{lstDocs = Database.query(strQueryOverDocuments);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
-            System.debug(loggingLevel.Error, '*** lstDocs: ' + lstDocs);
+            if(lstDocCase.isEmpty()) {    
+                strQueryOverDocuments = 'SELECT '+String.join(new List<String>(SObjectType.Document__c.Fields.getMap().keySet()), ', ')+' FROM Document__c WHERE RelatedProcedure__c = \''+idCurrentCase+'\'';
+                try{lstDocs = Database.query(strQueryOverDocuments);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
+                System.debug(loggingLevel.Error, '*** lstDocs: ' + lstDocs);
+            }else {
+                lstDocs.addAll(lstDocCase);
+            }
+
             if(!lstDocs.isEmpty()) {
                 for(Document__c rD: lstDocs) {
                     setDocs.add(rD.DocumentTypeId__c);
@@ -264,63 +273,34 @@ global class AAZ_Utils_cls {
             }            
         }
         if(stgType != null || !String.isBlank(stgType)) {
-            /*if (stgType == strSpecialType) {
-                if (
-                    (objCase.IdWithdrawtype__c!=null || !String.isBlank(objCase.IdWithdrawtype__c)) &&
-                    (objCase.IdSecuritytype__c!=null || !String.isBlank(objCase.IdSecuritytype__c)) &&
-                    (objCase.IdPensiontype__c!=null || !String.isBlank(objCase.IdPensiontype__c)) &&
-                    (objCase.idRegimeType__c!=null || !String.isBlank(objCase.idRegimeType__c))
-                ) {
-                    String strQueryTotalWithdrawals = 'SELECT '+String.join(
-                        new List<String>(SObjectType.TotalWithdrawalsDocuments__mdt.Fields.getMap().keySet()), ', ')+' FROM TotalWithdrawalsDocuments__mdt WHERE TypePension__c = \''+objCase.IdPensiontype__c+'\' AND RegimeType__c = '+objCase.idRegimeType__c+' AND TypeRetreat__c =\''+objCase.IdWithdrawtype__c+'\' AND TypeInsurance__c = \''+objCase.IdSecuritytype__c+'\'';
+            if(stgSubType != null || !String.isBlank(stgSubType)) {
+                strQueryProcedureData = 'SELECT '+String.join(new List<String>(SObjectType.Procedure__mdt.Fields.getMap().keySet()), ', ')+' FROM Procedure__mdt WHERE ServiceType__c = \''+stgType+'\' AND SubType__c= \''+stgSubType+'\' LIMIT 1';
+            } else {
+                strQueryProcedureData = 'SELECT '+String.join(new List<String>(SObjectType.Procedure__mdt.Fields.getMap().keySet()), ', ')+' FROM Procedure__mdt WHERE ServiceType__c = \''+stgType+'\' LIMIT 1';
+            }
+            System.debug(loggingLevel.Error, '*** strQueryProcedureData: ' + strQueryProcedureData);
+            try{objProcedureData = Database.query(strQueryProcedureData);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
+            System.debug(loggingLevel.Error, '*** objProcedureData: ' + objProcedureData);
+            Procedure__mdt emptyProcedure = new Procedure__mdt();
+            if (objProcedureData == emptyProcedure) {
+                System.debug(loggingLevel.Error, '*** 5:');
+                blnDocComplete = false;
+            } else {
+                System.debug(loggingLevel.Error, '*** 6:');
+                strQueryRequiredDoc = 'SELECT '+String.join(new List<String>(SObjectType.RequiredDocument__mdt.Fields.getMap().keySet()), ', ')+', RelatedDocumentType__r.DigitizationID__c, RelatedDocumentType__r.IsRequired__c FROM RequiredDocument__mdt WHERE RelatedDocumentType__r.IsRequired__c = true AND RelatedProcedure__c = \''+objProcedureData.Id+'\'';
+                try{lstReqDocs = Database.query(strQueryRequiredDoc);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
+            }
 
-                    try{lstTotalWithdrawals = Database.query(strQueryTotalWithdrawals);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
-
-                    if(lstTotalWithdrawals.isEmpty()) {
+            if(!lstReqDocs.isEmpty()) {
+                for(RequiredDocument__mdt rqD: lstReqDocs) {
+                    System.debug(loggingLevel.Error, '*** Documento: ' + rqD.RelatedDocumentType__r.DigitizationID__c);
+                    if(!setDocs.contains(rqD.RelatedDocumentType__r.DigitizationID__c)) {
+                        System.debug(loggingLevel.Error, '*** 7:');
                         blnDocComplete = false;
-                    } else {
-                        for(TotalWithdrawalsDocuments__mdt iterator:lstTotalWithdrawals){
-                            if(!setDocs.contains(String.valueOf(iterator.ScannerID__c))) {
-                                blnDocComplete = false;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    blnDocComplete = false;
-                }
-
-            } else {*/
-                if(stgSubType != null || !String.isBlank(stgSubType)) {
-                    strQueryProcedureData = 'SELECT '+String.join(new List<String>(SObjectType.Procedure__mdt.Fields.getMap().keySet()), ', ')+' FROM Procedure__mdt WHERE ServiceType__c = \''+stgType+'\' AND SubType__c= \''+stgSubType+'\' LIMIT 1';
-                } else {
-                    strQueryProcedureData = 'SELECT '+String.join(new List<String>(SObjectType.Procedure__mdt.Fields.getMap().keySet()), ', ')+' FROM Procedure__mdt WHERE ServiceType__c = \''+stgType+'\' LIMIT 1';
-                }
-                System.debug(loggingLevel.Error, '*** strQueryProcedureData: ' + strQueryProcedureData);
-                try{objProcedureData = Database.query(strQueryProcedureData);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
-                System.debug(loggingLevel.Error, '*** objProcedureData: ' + objProcedureData);
-                Procedure__mdt emptyProcedure = new Procedure__mdt();
-                if (objProcedureData == emptyProcedure) {
-                    System.debug(loggingLevel.Error, '*** 5:');
-                    blnDocComplete = false;
-                } else {
-                    System.debug(loggingLevel.Error, '*** 6:');
-                    strQueryRequiredDoc = 'SELECT '+String.join(new List<String>(SObjectType.RequiredDocument__mdt.Fields.getMap().keySet()), ', ')+', RelatedDocumentType__r.DigitizationID__c, RelatedDocumentType__r.IsRequired__c FROM RequiredDocument__mdt WHERE RelatedDocumentType__r.IsRequired__c = true AND RelatedProcedure__c = \''+objProcedureData.Id+'\'';
-                    try{lstReqDocs = Database.query(strQueryRequiredDoc);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
-                }
-
-
-                if(!lstReqDocs.isEmpty()) {
-                    for(RequiredDocument__mdt rqD: lstReqDocs) {
-                        System.debug(loggingLevel.Error, '*** Documento: ' + rqD.RelatedDocumentType__r.DigitizationID__c);
-                        if(!setDocs.contains(rqD.RelatedDocumentType__r.DigitizationID__c)) {
-                            System.debug(loggingLevel.Error, '*** 7:');
-                            blnDocComplete = false;
-                            break;
-                        }
+                        break;
                     }
                 }
-            //}
+            }
         } else {
             if (strAPRegisterType == caseDevName) {
                 strQueryProcedureData = 'SELECT '+String.join(new List<String>(SObjectType.Procedure__mdt.Fields.getMap().keySet()), ', ')+' FROM Procedure__mdt WHERE ServiceType__c = \''+caseDevName+'\' LIMIT 1';

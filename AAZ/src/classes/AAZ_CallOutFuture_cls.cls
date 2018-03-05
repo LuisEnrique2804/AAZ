@@ -81,8 +81,12 @@ global class AAZ_CallOutFuture_cls {
                     SObjectField f = Contact.Field.EmployeeNumber__c;
                     Database.SaveResult[] srB = Database.insert(beneficiaryCase, true);
                     Database.SaveResult[] srR = Database.insert(referenceCase, true);
-                    Database.SaveResult[] srD = Database.insert(documentCase, true);
-                    caseIterator.completeDocs__c = AAZ_Utils_cls.documentsRequiredComplete(caseIterator);
+                    //Database.SaveResult[] srD = Database.insert(documentCase, true);
+                    caseIterator.completeDocs__c = AAZ_Utils_cls.documentsRequiredComplete(caseIterator, documentCase);//AAZ_Utils_cls.documentsRequiredComplete(caseIterator);
+                    System.debug(loggingLevel.Error, '*** Documentos Completos?: ' + caseIterator.completeDocs__c);
+                    if(caseIterator.completeDocs__c) {
+                        Database.SaveResult[] srD = Database.insert(documentCase, true);
+                    }
                     if(agentCase.EmployeeNumber__c != null || String.isNotBlank(agentCase.EmployeeNumber__c)) {
                         Database.UpsertResult srContact = Database.upsert(agentCase,f,true);
                         if(srContact.isSuccess()) {
