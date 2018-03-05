@@ -219,7 +219,7 @@ global class AAZ_Utils_cls {
 
     public static Boolean documentsRequiredComplete( Case objCase){
         Boolean blIsComplete = false;
-        blIsComplete = documentsRequiredComplete(objCase, null)
+        blIsComplete = documentsRequiredComplete(objCase, null);
         return blIsComplete;
     }
 

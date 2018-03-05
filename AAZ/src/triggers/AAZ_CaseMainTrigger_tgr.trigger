@@ -16,6 +16,7 @@ trigger AAZ_CaseMainTrigger_tgr on Case (after insert, before update) {
 		if(Trigger.isBefore) {
 			if(Trigger.isUpdate) {
 				AAZ_CallOutFuture_cls.approveRejectProcedure(Trigger.newMap, Trigger.oldMap);
+				AAZ_CallOutFuture_cls.revalidateProcedure(Trigger.newMap, Trigger.oldMap);
                 TriggerManager.inactivate('AAZ_CaseMainTrigger_tgr');
 			}
 			

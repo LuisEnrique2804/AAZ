@@ -112,7 +112,27 @@ global class AAZ_CallOutFuture_cls {
         }
     }
 
-    
+    public static void revalidateProcedure(Map<Id,Case> mapNewUpdatdeDocs, Map<Id,Case> mapOldUpdatdeDocs){
+        Case objCaseProcedure = new Case();
+        for(Id idCase: mapOldUpdatdeDocs.keySet()) {
+            if(mapOldUpdatdeDocs.get(idCase).UpdateDocuments__c != mapNewUpdatdeDocs.get(idCase).UpdateDocuments__c) {
+                if(mapNewUpdatdeDocs.get(idCase).UpdateDocuments__c) {
+                    String stgQueryOverCase = 'SELECT '+String.join(new List<String>(SObjectType.Case.Fields.getMap().keySet()), ', ')+', Account.NSS__c FROM Case WHERE Id = \''+idCase+'\' limit 1';
+                    try {objCaseProcedure = Database.query(stgQueryOverCase);} catch(DmlException dE){} catch(Exception e) {}
+                    objCaseProcedure.completeDocs__c = AAZ_Utils_cls.documentsRequiredComplete(objCaseProcedure);
+                    Database.SaveResult sr = Database.update(objCaseProcedure, true); 
+                    if(sr.isSuccess() ) {
+                        System.debug(loggingLevel.Error, '*** Tramite Asociado exitosamente: ');
+                    }else {
+                        System.debug(loggingLevel.Error, '*** sr: ' + sr.getErrors() );
+                    }
+                }   
+            }
+        }
+
+    }
+
+
     public static void approveRejectProcedure(Map<Id,Case> mapNewStatus, Map<Id,Case> mapOldStatus){
         Set<Id> setCaseToApprove = new Set<Id>();
         Set<Id> setCaseToReject = new Set<Id>();
