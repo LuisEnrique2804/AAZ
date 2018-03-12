@@ -1596,15 +1596,17 @@
         "mmState": "clean"
     },
     "AAZ_DocumentValidate_ctr.cls": {
-        "createdById": "005g0000004EkWhAAK",
-        "createdByName": "Consultor Avanxo 3",
-        "createdDate": "2017-07-21T02:44:37.000Z",
-        "fileName": "unpackaged/classes/AAZ_DocumentValidate_ctr.cls",
-        "fullName": "AAZ_DocumentValidate_ctr",
         "id": "01pg0000000SoLQAA0",
+        "name": "AAZ_DocumentValidate_ctr",
+        "createdDate": "2017-07-21T02:44:37.000+0000",
+        "createdById": "005g0000004EkWhAAK",
+        "namespacePrefix": null,
         "lastModifiedById": "005g0000004EkVtAAK",
+        "lastModifiedDate": "2018-03-08T16:28:37.000+0000",
+        "fullName": "AAZ_DocumentValidate_ctr",
+        "fileName": "unpackaged/classes/AAZ_DocumentValidate_ctr.cls",
+        "createdByName": "Consultor Avanxo 3",
         "lastModifiedByName": "Consultor Avanxo 2",
-        "lastModifiedDate": "2018-02-26T18:02:39.000Z",
         "manageableState": "unmanaged",
         "type": "ApexClass",
         "mmState": "clean"

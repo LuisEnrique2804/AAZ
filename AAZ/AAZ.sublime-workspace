@@ -1,1 +1,1648 @@
-{}
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"test",
+				"Test"
+			],
+			[
+				"for",
+				"fore\tIterator-based FOR loop"
+			],
+			[
+				"fo",
+				"forBlock\tTrad FOR loop around selection"
+			],
+			[
+				"Case",
+				"caseComment"
+			],
+			[
+				"i",
+				"PUBLIC isBlank(String str) \tBoolean"
+			],
+			[
+				"sta",
+				"static"
+			],
+			[
+				"whe",
+				"WHERE"
+			],
+			[
+				"al",
+				"alert"
+			],
+			[
+				"met",
+				"methodHeader\tMethod Header for Java Docs"
+			],
+			[
+				"pa",
+				"apex:param"
+			],
+			[
+				"com",
+				"apex:commandButton"
+			],
+			[
+				"s",
+				"status\t(String)"
+			],
+			[
+				"blnApprovalOrRejectionWasCo",
+				"blnApprovalOrRejectionWasCommited"
+			],
+			[
+				"blnA",
+				"blnApprovalOrRejectionWasCommited"
+			],
+			[
+				"bo",
+				"Boolean"
+			],
+			[
+				"Sa",
+				"SaveResult"
+			],
+			[
+				"onc",
+				"onclick\tAttr"
+			],
+			[
+				"lstRequire",
+				"lstRequiredDocumentWrappers"
+			],
+			[
+				"isEm",
+				"PUBLIC isEmpty(String str) \tBoolean"
+			],
+			[
+				"fun",
+				"function"
+			],
+			[
+				"page",
+				"PageReference"
+			],
+			[
+				"con",
+				"console"
+			],
+			[
+				"retur",
+				"return"
+			],
+			[
+				"try",
+				"tryc\tSimple TRY CATCH Condition"
+			],
+			[
+				"new",
+				"New"
+			],
+			[
+				"Sta",
+				"status"
+			],
+			[
+				"D",
+				"DeleteResult"
+			],
+			[
+				"savr",
+				"SaveResult"
+			],
+			[
+				"id",
+				"idbeneficiario"
+			],
+			[
+				"Paren",
+				"ParentIdBeneficiary__c"
+			],
+			[
+				"REcord",
+				"RecordTypeId"
+			],
+			[
+				"w",
+				"width"
+			],
+			[
+				"di",
+				"div\tTag"
+			],
+			[
+				"el",
+				"else\tElse clause"
+			],
+			[
+				"out",
+				"apex:outputPanel"
+			],
+			[
+				"font",
+				"font-size"
+			],
+			[
+				"get",
+				"PUBLIC getMethod() \tString"
+			],
+			[
+				"req",
+				"request"
+			],
+			[
+				"o",
+				"apex:outputPanel"
+			],
+			[
+				"la",
+				"apex:outputLabel"
+			],
+			[
+				"lst",
+				"lstDocumentData"
+			],
+			[
+				"co",
+				"color"
+			],
+			[
+				"f",
+				"apex:form"
+			],
+			[
+				"v",
+				"PUBLIC valueOf(Object o) \tString"
+			],
+			[
+				"int",
+				"integer"
+			],
+			[
+				"strC",
+				"strCurrentOrder"
+			],
+			[
+				"lstS",
+				"lstStringMapKey"
+			],
+			[
+				"lstP",
+				"lstPivotOrder"
+			],
+			[
+				"n",
+				"newList\tInstantiate a new List"
+			],
+			[
+				"lstUser",
+				"lstUserQuery"
+			],
+			[
+				"Da",
+				"Database\t[Standard Apex Class]"
+			],
+			[
+				"Se",
+				"SELECT"
+			],
+			[
+				"S",
+				"String\t[Standard Apex Class]"
+			],
+			[
+				"use",
+				"lstUserOptions"
+			],
+			[
+				"c",
+				"PUBLIC containsKey(ANY key) \tBoolean"
+			],
+			[
+				"De",
+				"Decimal\t[Standard Apex Class]"
+			],
+			[
+				"L",
+				"List\t[Standard Apex Class]"
+			],
+			[
+				"st",
+				"string"
+			],
+			[
+				"curr",
+				"currentDocumentData"
+			],
+			[
+				"http",
+				"httpReqInstance"
+			],
+			[
+				"font-",
+				"font-weight"
+			],
+			[
+				"Dat",
+				"Date\t[Standard Apex Class]"
+			],
+			[
+				"Li",
+				"Limit"
+			],
+			[
+				"wi",
+				"window"
+			],
+			[
+				"Cas",
+				"CaseComment"
+			],
+			[
+				"tr",
+				"tryc\tSimple TRY CATCH Condition"
+			],
+			[
+				"map",
+				"mapDocumentOrderPage"
+			],
+			[
+				"lstD",
+				"lstDocumentOrderPage"
+			],
+			[
+				"Docu",
+				"Document__c"
+			],
+			[
+				"mapD",
+				"mapDocumentOrder"
+			],
+			[
+				"sort",
+				"SortedSelectOptions"
+			],
+			[
+				"select",
+				"selectOptionsToSort"
+			],
+			[
+				"piv",
+				"pivotValue"
+			],
+			[
+				"selectO",
+				"selectOptionsToSort"
+			],
+			[
+				"lstR",
+				"lstRelatedDocuments"
+			],
+			[
+				"Val",
+				"valueOf"
+			],
+			[
+				"va",
+				"valueof"
+			],
+			[
+				"O",
+				"ORDER"
+			],
+			[
+				"str",
+				"strIDUser"
+			],
+			[
+				"a",
+				"asse\tAssert Equals"
+			],
+			[
+				"me",
+				"methodHeader\tMethod Header for Java Docs"
+			],
+			[
+				"case",
+				"CaseComments"
+			],
+			[
+				"data",
+				"Database"
+			],
+			[
+				"So",
+				"SObject\t[Standard Apex Class]"
+			],
+			[
+				"list",
+				"List"
+			],
+			[
+				"re",
+				"apex:relatedList"
+			],
+			[
+				"ls",
+				"lstSuccessMsgs"
+			],
+			[
+				"Stat",
+				"Status__c"
+			],
+			[
+				"La",
+				"LastName"
+			],
+			[
+				"U",
+				"UpsertResult"
+			],
+			[
+				"stgm",
+				"stgMathernalName"
+			],
+			[
+				"stgF",
+				"stgFatherLastName"
+			],
+			[
+				"stgC",
+				"stgCurp"
+			],
+			[
+				"on",
+				"onclick\t(String)"
+			],
+			[
+				"d",
+				"disabled\t(Boolean)"
+			],
+			[
+				"cu",
+				"currentCase"
+			],
+			[
+				"Re",
+				"RecordTypeId"
+			],
+			[
+				"qu",
+				"query"
+			],
+			[
+				"Q",
+				"Query"
+			],
+			[
+				"cat",
+				"caseToCatchQuery"
+			],
+			[
+				"H",
+				"H1\tTag"
+			],
+			[
+				"input",
+				"apex:inputField"
+			],
+			[
+				"inp",
+				"apex:inputText"
+			],
+			[
+				"E",
+				"extensions\t(String)"
+			],
+			[
+				"is",
+				"PUBLIC isSuccess() \tBoolean"
+			],
+			[
+				"if",
+				"if\tSimple IF Condition"
+			],
+			[
+				"strSu",
+				"strSubSubType"
+			],
+			[
+				"ma",
+				"mapExtraAttrs"
+			],
+			[
+				"ser",
+				"serviceCallResponseInstance"
+			],
+			[
+				"I",
+				"Id\t[Standard Apex Class]"
+			],
+			[
+				"C",
+				"Case"
+			],
+			[
+				"lstCas",
+				"lstCase"
+			],
+			[
+				"sr",
+				"srC"
+			],
+			[
+				"de",
+				"debug\tSystem debug with log level Error"
+			],
+			[
+				"B",
+				"Boolean\t[Standard Apex Class]"
+			],
+			[
+				"p",
+				"PUBLIC add(ANY element) \tBoolean"
+			],
+			[
+				"mapE",
+				"mapExtraHeaders"
+			],
+			[
+				"Aut",
+				"Authorization"
+			],
+			[
+				"put",
+				"PUBLIC put(ANY key, ANY value) \tString"
+			],
+			[
+				"els",
+				"else\tElse clause"
+			],
+			[
+				"Sr",
+				"srC"
+			],
+			[
+				"V",
+				"PUBLIC valueOf(String str) \tDate"
+			],
+			[
+				"SO",
+				"SObject\t[Standard Apex Class]"
+			],
+			[
+				"else",
+				"else\tElse clause"
+			],
+			[
+				"St",
+				"String\t[Standard Apex Class]"
+			],
+			[
+				"ne",
+				"newSet\tInstantiate a new Set"
+			],
+			[
+				"m",
+				"newMap"
+			],
+			[
+				"user",
+				"userUpdate"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/classes/AAZ_CallOutFuture_cls.cls",
+			"settings":
+			{
+				"buffer_size": 18715,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/classes/AAZ_Utils_cls.cls",
+			"settings":
+			{
+				"buffer_size": 26159,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/pages/AAZ_UpdateCase_pag.page",
+			"settings":
+			{
+				"buffer_size": 442,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/pages/AAZ_DocumentValidate_pag.page",
+			"settings":
+			{
+				"buffer_size": 82901,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/classes/AAZ_DocumentValidate_ctr.cls",
+			"settings":
+			{
+				"buffer_size": 73162,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/pages/AAZ_HomePage_pag.page",
+			"settings":
+			{
+				"buffer_size": 31907,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/triggers/AAZ_CaseMainTrigger_tgr.trigger",
+			"settings":
+			{
+				"buffer_size": 1434,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"new",
+				"MavensMate: New Visualforce Page"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"package Control: in",
+				"Package Control: Install Package"
+			],
+			[
+				"syntax: Visu",
+				"Set Syntax: Visualforce"
+			],
+			[
+				"syntax: ",
+				"Set Syntax: Visualforce"
+			],
+			[
+				"syntax: Apex",
+				"Set Syntax: Apex"
+			],
+			[
+				"pa",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 444.0
+	},
+	"console":
+	{
+		"height": 119.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/ToshAvanxo/Documents/Workspace/AZZ/AAZ",
+		"/C/Users/ToshAvanxo/Documents/Workspace/AZZ/AAZ/src"
+	],
+	"file_history":
+	[
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_UpdateCase_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_UpdateBulkCase_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_UpdateBulkCase_bch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_DeleteLogIntegration_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_DeleteLogIntegration_bch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_DeleteLogIntegration_sch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_UpdateBulkCase_sch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/classes/AAZ_DataReceptionService_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-02032018/src/buildtest.py",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_DocumentValidate_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_CallOutFuture_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_QualitySamples_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_AgentQuery_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_HomePage_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/pages/AAZ_QualitySamples_pag.page",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_DocumentValidate_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/pages/AAZ_InsertComplaint_pag.page",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_InsertComplaint_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_DocumentQueryWS_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_Utils_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_UpdateCase_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_CallOutFuture_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/labels/CustomLabels.labels",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_AccountDetailsFromProcedure_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/pages/AAZ_DocumentValidate_pag.page",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_NewProcedure_ws.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/triggers/AAZ_CaseMainTrigger_tgr.trigger",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/AFORE-26022017/src/classes/AAZ_Afore_QueryReference_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/TriggerManager.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/Delete_Historial_ctr_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/DeleteHistoricalProcess_sch_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/DeleteHistoricalProcess_sch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/DeleteHistoricalProcess_bch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/Delete_Historial_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_UserResponseWrapper_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_UpdateCase_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SubsidiaryQuery_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SendDocumentsWizardCase_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SendDocumentsWizardBlkHst_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SendDocumentsWizardAP_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_RiskLevel_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ReturnToQueue_sch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ReturnToQueue_bch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ReturnToQueue_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SearchHistoricalProcess_callout.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SecurityServices_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SearchHistoricalProcess_ctr_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SearchHistoricalProcess_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SearchHistoricalProcess_callout_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ResponseNewProcedure_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_RelatedRejectionsCmpTest_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_QualitySamples_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PromoterDocumentsService_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PromoterDocumentsService_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PersonalReferencesClient_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgentAux_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewAPDocument_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewAPDocument_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_LockUnlockAP_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_LockUnlockAP_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_LockUnLockAgent_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_GenericCallOutMock_mck.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentIdentification_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteUserAsync_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DataReceptionService_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CreateUserAsync_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CaseQueryWS_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CaseQueryWS_mck.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CallOutFuture_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CallOutFuture_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CaseDocumentsClient_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_WebServiceException_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_WebServiceException.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_Utils_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_Utils_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_UserResponseWrapper_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SubsidiaryQuery_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SubsidiaryClient_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SubsidiaryClient_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ServiceTokenResponse_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SendDocumentsWizardBlkHst_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SendDocumentsWizard_ctr_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_SecurityServices_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_RiskLevel_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ResponseNewProcedure_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_RequestNewProcedure_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_RelatedRejectionsCmp_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_QualitySamples_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PromoterAgentServiceTest_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PromoterAgentClient_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PromoterAgentClient_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_PersonalReferencesClient_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgentResponse_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgentRequest_wpr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgentAux_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgent_ws.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewPromoterAgent_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewProcedureAux_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewProcedureAux_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewProcedure_ws.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_NewProcedure_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_LockUnLockAgent_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_InsertComplaint_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_InsertComplaint_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_HomePage_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_HomePage_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_GenericCallout_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_GenericCallout_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentValidate_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentValidate_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentQueryWS_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentList_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentList_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DocumentIdentification_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteUserAsync_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteLogIntegration_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteLogIntegration_sch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteLogIntegration_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DeleteLogIntegration_bch.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DataReceptionService_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DataModify_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_DataModify_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CustomCaseDetail_ctr_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CustomCaseDetail_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_CreateUserAsync_cls.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ContactList_tst.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ContactList_ctr.cls",
+		"/C/Users/ToshAvanxo/Documents/Workspace/Avanxo/Desarrollo/Afore-16022018/src/classes/AAZ_ContactComplaints_tst.cls"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 105.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"strSoundLink",
+			"label",
+			"openBiometricalComponent",
+			"function",
+			"openBiometricalComponent",
+			"setListeningMode",
+			"openBiometricalComponent",
+			"biomé",
+			"biometric",
+			"biometrico",
+			"setListeningMode",
+			"srL",
+			"documentsRequiredComplete",
+			"Status",
+			"mapNewStatus",
+			"Status",
+			"updateSubsidary",
+			"lstDocCase",
+			"lstDocs",
+			"documentsRequiredCompleted",
+			"object"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 4,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/classes/AAZ_CallOutFuture_cls.cls",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 18715,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1331,
+								1834
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Apex.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 894.0,
+						"translation.y": 91.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/classes/AAZ_Utils_cls.cls",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 26159,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11434,
+								11434
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Apex.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2899.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/pages/AAZ_UpdateCase_pag.page",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 442,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/pages/AAZ_DocumentValidate_pag.page",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 82901,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								23631,
+								23643
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4117.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/classes/AAZ_DocumentValidate_ctr.cls",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 73162,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14185,
+								14204
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Apex.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3412.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/pages/AAZ_HomePage_pag.page",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 31907,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								21549,
+								21565
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3352.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/triggers/AAZ_CaseMainTrigger_tgr.trigger",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1434,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								961,
+								980
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/MavensMate/sublime/lang/Apex.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 21.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.MavensMate-OutputPanel":
+	{
+		"height": 91.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/Python/Python.sublime-build",
+	"project": "AAZ.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"documentvalid",
+				"src\\classes\\AAZ_DocumentValidate_ctr.cls"
+			],
+			[
+				"documentvalida",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"home",
+				"src\\pages\\AAZ_HomePage_pag.page"
+			],
+			[
+				"documentva",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"update",
+				"src\\pages\\AAZ_UpdateCase_pag.page"
+			],
+			[
+				"casetr",
+				"src\\triggers\\AAZ_CaseMainTrigger_tgr.trigger"
+			],
+			[
+				"util",
+				"src\\classes\\AAZ_Utils_cls.cls"
+			],
+			[
+				"call",
+				"src\\classes\\AAZ_CallOutFuture_cls.cls"
+			],
+			[
+				"aaz_deletelogintegration_cls",
+				"src\\classes\\AAZ_DeleteLogIntegration_cls.cls"
+			],
+			[
+				"upda",
+				"src\\classes\\AAZ_UpdateCase_ctr.cls"
+			],
+			[
+				"aaz_documentqueryws_cls",
+				"src\\classes\\AAZ_DocumentQueryWS_cls.cls"
+			],
+			[
+				"quality",
+				"src\\pages\\AAZ_QualitySamples_pag.page"
+			],
+			[
+				"aaz_agentquery_cls",
+				"src\\classes\\AAZ_AgentQuery_cls.cls"
+			],
+			[
+				"insertcompl",
+				"src\\pages\\AAZ_InsertComplaint_pag.page"
+			],
+			[
+				"insert",
+				"src\\classes\\AAZ_InsertComplaint_ctr.cls"
+			],
+			[
+				"utils",
+				"src\\classes\\AAZ_Utils_cls.cls"
+			],
+			[
+				"updatecas",
+				"src\\classes\\AAZ_UpdateCase_ctr.cls"
+			],
+			[
+				"documentvalidate",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"newpr",
+				"src\\classes\\AAZ_NewProcedure_ws.cls"
+			],
+			[
+				"aaz_afore_queryreference_cls",
+				"src\\classes\\AAZ_Afore_QueryReference_cls.cls"
+			],
+			[
+				"documentide",
+				"src\\classes\\AAZ_DocumentIdentification_ctr.cls"
+			],
+			[
+				"aaz_newprocedureaux_cls",
+				"src\\classes\\AAZ_NewProcedureAux_cls.cls"
+			],
+			[
+				"new",
+				"src\\classes\\AAZ_NewProcedure_ws.cls"
+			],
+			[
+				"return",
+				"src\\classes\\AAZ_ReturnToQueue_cls.cls"
+			],
+			[
+				"aaz_utils_cls",
+				"src\\classes\\AAZ_Utils_cls.cls"
+			],
+			[
+				"aaz_updatecase_ctr",
+				"src\\classes\\AAZ_UpdateCase_ctr.cls"
+			],
+			[
+				"aaz_updatecase_pag",
+				"src\\pages\\AAZ_UpdateCase_pag.page"
+			],
+			[
+				"aaz_senddocumentswizardap_ctr",
+				"src\\classes\\AAZ_SendDocumentsWizardAP_ctr.cls"
+			],
+			[
+				"aaz_casedocumentsclient_tst",
+				"src\\classes\\AAZ_CaseDocumentsClient_tst.cls"
+			],
+			[
+				"link",
+				"src\\pages\\AAZ_LinkProcedure_pag.page"
+			],
+			[
+				"updatre",
+				"src\\classes\\AAZ_UpdateCase_ctr.cls"
+			],
+			[
+				"aaz_securityservices_cls",
+				"src\\classes\\AAZ_SecurityServices_cls.cls"
+			],
+			[
+				"user",
+				"src\\triggers\\AAZ_UserTrigger_tgr.trigger"
+			],
+			[
+				"casetri",
+				"src\\triggers\\AAZ_CaseMainTrigger_tgr.trigger"
+			],
+			[
+				"aaz_utils_tst",
+				"src\\classes\\AAZ_Utils_tst.cls"
+			],
+			[
+				"aaz_requestnewprocedure_wpr",
+				"src\\classes\\AAZ_RequestNewProcedure_wpr.cls"
+			],
+			[
+				"aaz_documentlist_ctr",
+				"src\\classes\\AAZ_DocumentList_ctr.cls"
+			],
+			[
+				"documentlist",
+				"src\\pages\\AAZ_DocumentList_pag.page"
+			],
+			[
+				"aaz_accountdetailsfromprocedure_ctr",
+				"src\\classes\\AAZ_AccountDetailsFromProcedure_ctr.cls"
+			],
+			[
+				"accountde",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"aaz_documentvalidate_ctr",
+				"src\\classes\\AAZ_DocumentValidate_ctr.cls"
+			],
+			[
+				"documenva",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"accountd",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"accountdeta",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"aaz_responsenewprocedure_wpr",
+				"src\\classes\\AAZ_ResponseNewProcedure_wpr.cls"
+			],
+			[
+				"va",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"aaz_beneficiariesclient_tst",
+				"src\\classes\\AAZ_BeneficiariesClient_tst.cls"
+			],
+			[
+				"aaz_accountcomplaints_tst",
+				"src\\classes\\AAZ_AccountComplaints_tst.cls"
+			],
+			[
+				"aaz_subsidiaryclient_tst",
+				"src\\classes\\AAZ_SubsidiaryClient_tst.cls"
+			],
+			[
+				"accountli",
+				"src\\classes\\AAZ_AccountList_tst.cls"
+			],
+			[
+				"aaz_documentidentification_ctr",
+				"src\\classes\\AAZ_DocumentIdentification_ctr.cls"
+			],
+			[
+				"documenti",
+				"src\\pages\\AAZ_DocumentIdentification_pag.page"
+			],
+			[
+				"aaz_documentvalidate_tst",
+				"src\\classes\\AAZ_DocumentValidate_tst.cls"
+			],
+			[
+				"aaz_documentqueryws_tst",
+				"src\\classes\\AAZ_DocumentQueryWS_tst.cls"
+			],
+			[
+				"aaz_accountlist_tst",
+				"src\\classes\\AAZ_AccountList_tst.cls"
+			],
+			[
+				"aaz_insertcomplaint_ctr",
+				"src\\classes\\AAZ_InsertComplaint_ctr.cls"
+			],
+			[
+				"aaz_insertcomplaint_tst",
+				"src\\classes\\AAZ_InsertComplaint_tst.cls"
+			],
+			[
+				"documentqu",
+				"src\\classes\\AAZ_DocumentQueryWS_tst.cls"
+			],
+			[
+				"document",
+				"src\\classes\\AAZ_DocumentQueryWS_tst.cls-meta.xml"
+			],
+			[
+				"quer",
+				"src\\classes\\AAZ_Afore_QueryReference_tst.cls"
+			],
+			[
+				"documentw",
+				"src\\classes\\AAZ_DocumentQueryWS_cls.cls"
+			],
+			[
+				"aaz_newapdocument_tst",
+				"src\\classes\\AAZ_NewAPDocument_tst.cls"
+			],
+			[
+				"lockunlockap",
+				"src\\classes\\AAZ_LockUnlockAP_tst.cls"
+			],
+			[
+				"aaz_documentidentification_tst",
+				"src\\classes\\AAZ_DocumentIdentification_tst.cls"
+			],
+			[
+				"aaz_datareceptionservice_tst",
+				"src\\classes\\AAZ_DataReceptionService_tst.cls"
+			],
+			[
+				"aaz_datamodify_tst",
+				"src\\classes\\AAZ_DataModify_tst.cls"
+			],
+			[
+				"aaz_callout_tst",
+				"src\\classes\\AAZ_CallOut_tst.cls"
+			],
+			[
+				"aaz_calloutfuture_tst",
+				"src\\classes\\AAZ_CallOutFuture_tst.cls"
+			],
+			[
+				"benefi",
+				"src\\classes\\AAZ_BeneficiariesClient_tst.cls"
+			],
+			[
+				"aaz_accountdetailsfromprocedure_tst",
+				"src\\classes\\AAZ_AccountDetailsFromProcedure_tst.cls"
+			],
+			[
+				"searc",
+				"src\\classes\\AAZ_SearchHistoricalProcess_callout.cls"
+			],
+			[
+				"search",
+				"src\\pages\\AAZ_SearchHistoricalProcess_pag.page"
+			],
+			[
+				"historical",
+				"src\\classes\\AAZ_SearchHistoricalProcess_ctr.cls"
+			],
+			[
+				"agentq",
+				"src\\classes\\AAZ_AgentQuery_cls.cls"
+			],
+			[
+				"subs",
+				"src\\classes\\AAZ_SubsidiaryQuery_cls.cls"
+			],
+			[
+				"bene",
+				"src\\classes\\AAZ_BeneficiaryQuery_cls.cls"
+			],
+			[
+				"benef",
+				"src\\classes\\AAZ_BeneficiaryQuery_cls.cls"
+			],
+			[
+				"aaz_searchhistoricalprocess_callout",
+				"src\\classes\\AAZ_SearchHistoricalProcess_callout.cls"
+			],
+			[
+				"sear",
+				"src\\classes\\AAZ_SearchHistoricalProcess_ctr.cls"
+			],
+			[
+				"aaz_servicetokenresponse_wpr",
+				"src\\classes\\AAZ_ServiceTokenResponse_wpr.cls"
+			],
+			[
+				"aaz_genericcallout_cls",
+				"src\\classes\\AAZ_GenericCallout_cls.cls"
+			],
+			[
+				"histori",
+				"src\\classes\\AAZ_SearchHistoricalProcess_ctr.cls"
+			],
+			[
+				"qual",
+				"src\\classes\\AAZ_QualitySamples_ctr.cls"
+			],
+			[
+				"contact",
+				"src\\classes\\AAZ_ContactList_tst.cls"
+			],
+			[
+				"test",
+				"src\\classes\\AAZ_TestUtils_tst.cls"
+			],
+			[
+				"newp",
+				"src\\classes\\AAZ_NewProcedure_ws.cls"
+			],
+			[
+				"generi",
+				"src\\classes\\AAZ_GenericCallout_cls.cls"
+			],
+			[
+				"quali",
+				"src\\pages\\AAZ_QualitySamples_pag.page"
+			],
+			[
+				"documentvali",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"insertcom",
+				"src\\pages\\AAZ_InsertComplaint_pag.page"
+			],
+			[
+				"accoundet",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"aaz_calloutfuture_cls",
+				"src\\classes\\AAZ_CallOutFuture_cls.cls"
+			],
+			[
+				"casemai",
+				"src\\triggers\\AAZ_CaseMainTrigger_tgr.trigger"
+			],
+			[
+				"risk",
+				"src\\pages\\AAZ_RiskLevel_pag.page"
+			],
+			[
+				"aaz_subsidiaryquery_cls",
+				"src\\classes\\AAZ_SubsidiaryQuery_cls.cls"
+			],
+			[
+				"documentv",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"castrigger",
+				"src\\triggers\\AAZ_CaseMainTrigger_tgr.trigger"
+			],
+			[
+				"caset",
+				"src\\triggers\\AAZ_CaseMainTrigger_tgr.trigger"
+			],
+			[
+				"riskle",
+				"src\\classes\\AAZ_RiskLevel_ctr.cls"
+			],
+			[
+				"case",
+				"src\\pages\\AAZ_CaseComment.page"
+			],
+			[
+				"inser",
+				"src\\classes\\AAZ_InsertComplaint_ctr.cls"
+			],
+			[
+				"account",
+				"src\\classes\\AAZ_AccountDetailsFromProcedure_ctr.cls"
+			],
+			[
+				"agent",
+				"src\\classes\\AAZ_AgentDetailsFromProcedure_ctr.cls"
+			],
+			[
+				"age",
+				"src\\pages\\AAZ_AgentDetailsFromProcedure_pag.page"
+			],
+			[
+				"identifica",
+				"src\\classes\\AAZ_DocumentIdentification_ctr.cls"
+			],
+			[
+				"identi",
+				"src\\pages\\AAZ_DocumentIdentification_pag.page"
+			],
+			[
+				"label",
+				"src\\labels\\CustomLabels.labels"
+			],
+			[
+				"documentiden",
+				"src\\classes\\AAZ_DocumentIdentification_ctr.cls"
+			],
+			[
+				"accountdetails",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"acco",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"qua",
+				"src\\classes\\AAZ_QualitySamples_ctr.cls"
+			],
+			[
+				"",
+				"src\\pages\\AAZ_InsertComplaint_pag.page"
+			],
+			[
+				"qu",
+				"src\\pages\\AAZ_QualitySamples_pag.page"
+			],
+			[
+				"insertcomplain",
+				"src\\classes\\AAZ_InsertComplaint_ctr.cls"
+			],
+			[
+				"newpro",
+				"src\\classes\\AAZ_NewProcedureAux_cls.cls"
+			],
+			[
+				"aaz_componentsservice_cls",
+				"src\\classes\\AAZ_ComponentsService_cls.cls"
+			],
+			[
+				"validate",
+				"src\\pages\\AAZ_DocumentValidate_pag.page"
+			],
+			[
+				"accountdet",
+				"src\\pages\\AAZ_AccountDetailsFromProcedure_pag.page"
+			],
+			[
+				"documentid",
+				"src\\pages\\AAZ_DocumentIdentification_pag.page"
+			],
+			[
+				"riskl",
+				"src\\pages\\AAZ_RiskLevel_pag.page"
+			],
+			[
+				"data",
+				"src\\classes\\AAZ_DataModify_ctr.cls"
+			],
+			[
+				"coment",
+				"src\\pages\\AAZ_CaseComment.page"
+			],
+			[
+				"aaz_beneficiaryquery_cls",
+				"src\\classes\\AAZ_BeneficiaryQuery_cls.cls"
+			],
+			[
+				"ut",
+				"src\\classes\\AAZ_Utils_cls.cls"
+			],
+			[
+				"labe",
+				"src\\labels\\CustomLabels.labels"
+			],
+			[
+				"documen",
+				"src\\classes\\AAZ_DocumentValidate_ctr.cls"
+			],
+			[
+				"sldsdynamiclookup",
+				"src\\classes\\SLDSDynamicLookupController.cls"
+			],
+			[
+				"aaz_callout_que",
+				"src\\classes\\AAZ_CallOut_que.cls"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 203.0,
+		"last_filter": "documentv",
+		"selected_items":
+		[
+			[
+				"documentv",
+				"AAZ_DocumentValidate_ctr"
+			]
+		],
+		"width": 392.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 394.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

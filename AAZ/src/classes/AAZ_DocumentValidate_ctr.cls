@@ -281,9 +281,9 @@ public class AAZ_DocumentValidate_ctr {
             for (Document__c doc: lstRelatedDocuments) {
                 setDocumentTypes.add(doc.DocumentTypeId__c);
 
-                if (doc.DocumentType__c == 'Sonido') {
+                if (doc.DocumentTypeId__c == '60') {
                     strSoundLink = doc.FileURL__c;
-                } else if (doc.DocumentType__c == 'Video') {
+                } else if (doc.DocumentTypeId__c == '50') {
                     strVideoLink = doc.FileURL__c;
                 }
             }
