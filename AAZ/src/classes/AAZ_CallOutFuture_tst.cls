@@ -49,7 +49,8 @@ private class AAZ_CallOutFuture_tst {
 		for ( Case thisCase : lstCases ) {
 			setIds.add(thisCase.Id);
 		}
-
+		System.debug(loggingLevel.Error, '*** lstCases: ' + lstCases);
+		System.debug(loggingLevel.Error, '*** lstCases.get(0).Id: ' + lstCases.get(0).Id);
 		Test.startTest();
 			AAZ_CallOutFuture_cls.callOuts ( setIds );			
 			AAZ_CallOutFuture_cls.processCase  ( lstCases.get(0).Id, true );

@@ -110,6 +110,7 @@ global class AAZ_CallOutFuture_cls {
                 }
             }
         }
+        TriggerManager.inactivate('AAZ_CaseMainTrigger_tgr');
     }
 
     public static void revalidateProcedure(Map<Id,Case> mapNewUpdatdeDocs, Map<Id,Case> mapOldUpdatdeDocs){
@@ -120,6 +121,7 @@ global class AAZ_CallOutFuture_cls {
                     String stgQueryOverCase = 'SELECT '+String.join(new List<String>(SObjectType.Case.Fields.getMap().keySet()), ', ')+', Account.NSS__c FROM Case WHERE Id = \''+idCase+'\' limit 1';
                     try {objCaseProcedure = Database.query(stgQueryOverCase);} catch(DmlException dE){} catch(Exception e) {}
                     objCaseProcedure.completeDocs__c = AAZ_Utils_cls.documentsRequiredComplete(objCaseProcedure);
+                    System.debug(loggingLevel.Error, '*** objCaseProcedure.completeDocs__c: ' + objCaseProcedure.completeDocs__c);
                     Database.SaveResult sr = Database.update(objCaseProcedure, true); 
                     if(sr.isSuccess() ) {
                         System.debug(loggingLevel.Error, '*** Tramite Asociado exitosamente: ');
@@ -129,7 +131,7 @@ global class AAZ_CallOutFuture_cls {
                 }   
             }
         }
-
+        TriggerManager.inactivate('AAZ_CaseMainTrigger_tgr');
     }
 
 
@@ -260,7 +262,8 @@ global class AAZ_CallOutFuture_cls {
                     }
                 }else {
                     objCaseProcedure.Status = 'EN VALIDACION';
-                    objCaseProcedure.OwnerId= System.Label.HighLevel;            
+                    objCaseProcedure.OwnerId= System.Label.HighLevel;  
+                    System.debug(loggingLevel.Error, '*** objCaseProcedure: ' + objCaseProcedure);          
                     Database.SaveResult srC = Database.update(objCaseProcedure, true);
                     if(srC.isSuccess()) {
                         System.debug(loggingLevel.Error, '*** Caso actualizado: ');
@@ -271,6 +274,7 @@ global class AAZ_CallOutFuture_cls {
 
             }
         }
+        TriggerManager.inactivate('AAZ_CaseMainTrigger_tgr');
     }
 
     public class ResponseWrapper {
@@ -310,6 +314,6 @@ global class AAZ_CallOutFuture_cls {
         } else {
             System.debug(loggingLevel.Error, '*** Caso No actualizado: ');
         }
+        TriggerManager.inactivate('AAZ_CaseMainTrigger_tgr');
     }
-
 }

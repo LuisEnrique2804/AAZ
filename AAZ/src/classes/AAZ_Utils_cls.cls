@@ -219,7 +219,9 @@ global class AAZ_Utils_cls {
 
     public static Boolean documentsRequiredComplete( Case objCase){
         Boolean blIsComplete = false;
-        blIsComplete = documentsRequiredComplete(objCase, null);
+        List<Document__c> lstDocsEmpty = new List<Document__c>();
+        blIsComplete = documentsRequiredComplete(objCase, lstDocsEmpty);
+        System.debug(loggingLevel.Error, '*** blIsComplete: ' + blIsComplete);
         return blIsComplete;
     }
 
@@ -256,11 +258,13 @@ global class AAZ_Utils_cls {
         caseDevName= (mapRegisterType.get('Case').containsKey(objCase.RecordTypeId))
             ?mapRegisterType.get('Case').get(objCase.RecordTypeId).DeveloperName:'';
         if(idCurrentCase != null) {
-            if(lstDocCase.isEmpty()) {    
+            System.debug(loggingLevel.Error, '*** lstDocCase: ' + lstDocCase);
+            if(lstDocCase.isEmpty()) {  
+                System.debug(loggingLevel.Error, '*** Paso 1');  
                 strQueryOverDocuments = 'SELECT '+String.join(new List<String>(SObjectType.Document__c.Fields.getMap().keySet()), ', ')+' FROM Document__c WHERE RelatedProcedure__c = \''+idCurrentCase+'\'';
                 try{lstDocs = Database.query(strQueryOverDocuments);}catch(QueryException qE){blnServiceHadError = true;stgMessage = qE.getMessage();}catch(Exception gE){blnServiceHadError = true; stgMessage = gE.getMessage();}
                 System.debug(loggingLevel.Error, '*** lstDocs: ' + lstDocs);
-            }else {
+            }else {System.debug(loggingLevel.Error, '*** Paso 2');  
                 lstDocs.addAll(lstDocCase);
             }
 
